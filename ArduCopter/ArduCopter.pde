@@ -1001,6 +1001,9 @@ static void fast_loop()
     // run the attitude controllers
     update_flight_mode();
 
+    run_my_code();
+
+
     // optical flow
     // --------------------
 #if OPTFLOW == ENABLED
@@ -1010,6 +1013,20 @@ static void fast_loop()
 #endif  // OPTFLOW == ENABLED
 
 }
+
+static void run_my_code(){
+	static uint8_t counter = 0;
+	counter++;
+	if (counter > 20) {
+		counter = 0;
+		ahrs
+		gcs[0].send_text_P(SEVERITY_HIGH, PSTR("hello world port 1"));
+
+		gcs[0].send_raw_imu(ins, compass);
+	}
+}
+
+
 
 // rc_loops - reads user input from transmitter/receiver
 // called at 100hz
