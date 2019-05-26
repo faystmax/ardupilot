@@ -1014,16 +1014,9 @@ static void fast_loop()
 
 }
 
-static void run_my_code(){
-	static uint8_t counter = 0;
-	counter++;
-	if (counter > 20) {
-		counter = 0;
-		ahrs
-		gcs[0].send_text_P(SEVERITY_HIGH, PSTR("hello world port 1"));
-
-		gcs[0].send_raw_imu(ins, compass);
-	}
+static void run_my_code()
+{
+	gcs_send_text_P(SEVERITY_HIGH, PSTR("|hello world|"));
 }
 
 
