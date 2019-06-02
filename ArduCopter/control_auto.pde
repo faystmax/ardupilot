@@ -20,7 +20,7 @@
 // auto_init - initialise auto controller
 static bool auto_init(bool ignore_checks)
 {
-    if ((GPS_ok() && inertial_nav.position_ok() && mission.num_commands() > 1) || ignore_checks) {
+    if ((GPS_ok() && telem.getInertialNav().position_ok() && mission.num_commands() > 1) || ignore_checks) {
         // stop ROI from carrying over from previous runs of the mission
         // To-Do: reset the yaw as part of auto_wp_start when the previous command was not a wp command to remove the need for this special ROI check
         if (auto_yaw_mode == AUTO_YAW_ROI) {
@@ -85,7 +85,7 @@ static void auto_takeoff_start(float final_alt)
     auto_mode = Auto_TakeOff;
 
     // initialise wpnav destination
-    Vector3f target_pos = inertial_nav.get_position();
+    Vector3f target_pos = telem.getInertialNav().get_position();
     target_pos.z = final_alt;
     wp_nav.set_wp_destination(target_pos);
 
@@ -355,7 +355,7 @@ static void auto_circle_movetoedge_start()
     wp_nav.set_wp_destination(circle_edge);
 
     // if we are outside the circle, point at the edge, otherwise hold yaw
-    const Vector3f &curr_pos = inertial_nav.get_position();
+    const Vector3f &curr_pos = telem.getInertialNav().get_position();
     const Vector3f &circle_center = circle_nav.get_center();
     float dist_to_center = pythagorous2(circle_center.x - curr_pos.x, circle_center.y - curr_pos.y);
     if (dist_to_center > circle_nav.get_radius() && dist_to_center > 500) {

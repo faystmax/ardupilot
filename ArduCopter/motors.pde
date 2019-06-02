@@ -121,7 +121,7 @@ static bool init_arm_motors()
     failsafe_disable();
 
     // disable inertial nav errors temporarily
-    inertial_nav.ignore_next_error();
+    telem.getInertialNav().ignore_next_error();
 
     // reset battery failsafe
     set_failsafe_battery(false);
@@ -172,7 +172,7 @@ static bool init_arm_motors()
     init_barometer(false);
 
     // reset inertial nav alt to zero
-    inertial_nav.set_altitude(0.0f);
+    telem.getInertialNav().set_altitude(0.0f);
 
     // go back to normal AHRS gains
     telem.getAhrs().set_fast_gains(false);
@@ -265,7 +265,7 @@ static void pre_arm_checks(bool display_failure)
             return;
         }
         // check Baro & inav alt are within 1m
-        if(fabs(inertial_nav.get_altitude() - baro_alt) > PREARM_MAX_ALT_DISPARITY_CM) {
+        if(fabs(telem.getInertialNav().get_altitude() - baro_alt) > PREARM_MAX_ALT_DISPARITY_CM) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Alt disparity"));
             }
@@ -551,7 +551,7 @@ static bool pre_arm_gps_checks(bool display_failure)
     }
 
     // check speed is below 50cm/s
-    float speed_cms = inertial_nav.get_velocity().length();     // speed according to inertial nav in cm/s
+    float speed_cms = telem.getInertialNav().get_velocity().length();     // speed according to inertial nav in cm/s
     if (speed_cms == 0 || speed_cms > PREARM_MAX_VELOCITY_CMS) {
         if (display_failure) {
             gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Bad Velocity"));
@@ -604,7 +604,7 @@ static bool arm_checks(bool display_failure, bool arming_from_gcs)
 
     // check Baro & inav alt are within 1m
     if ((g.arming_check == ARMING_CHECK_ALL) || (g.arming_check & ARMING_CHECK_BARO)) {
-        if(fabs(inertial_nav.get_altitude() - baro_alt) > PREARM_MAX_ALT_DISPARITY_CM) {
+        if(fabs(telem.getInertialNav().get_altitude() - baro_alt) > PREARM_MAX_ALT_DISPARITY_CM) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("Arm: Alt disparity"));
             }
@@ -665,7 +665,7 @@ static void init_disarm_motors()
     motors.armed(false);
 
     // disable inertial nav errors temporarily
-    inertial_nav.ignore_next_error();
+    telem.getInertialNav().ignore_next_error();
 
     // save offsets if automatic offset learning is on
     if (compass.learn_offsets_enabled()) {

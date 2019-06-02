@@ -949,7 +949,7 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: INAV_
     // @Path: ../libraries/AP_InertialNav/AP_InertialNav.cpp
-    GOBJECT(inertial_nav,           "INAV_",    AP_InertialNav),
+    GOBJECT(telem.getInertialNav(),           "INAV_",    AP_InertialNav),
 
     // @Group: WPNAV_
     // @Path: ../libraries/AC_WPNav/AC_WPNav.cpp

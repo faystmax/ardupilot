@@ -287,8 +287,8 @@ static void Log_Write_Nav_Tuning()
     const Vector3f &pos_target = pos_control.get_pos_target();
     const Vector3f &vel_target = pos_control.get_vel_target();
     const Vector3f &accel_target = pos_control.get_accel_target();
-    const Vector3f &position = inertial_nav.get_position();
-    const Vector3f &velocity = inertial_nav.get_velocity();
+    const Vector3f &position = telem.getInertialNav().get_position();
+    const Vector3f &velocity = telem.getInertialNav().get_velocity();
 
     struct log_Nav_Tuning pkt = {
         LOG_PACKET_HEADER_INIT(LOG_NAV_TUNING_MSG),
@@ -442,7 +442,7 @@ static void Log_Write_Performance()
         pm_test          : pmTest1,
         i2c_lockup_count : hal.i2c->lockup_count(),
         ins_error_count  : ins.error_count(),
-        inav_error_count : inertial_nav.error_count()
+        inav_error_count : telem.getInertialNav().error_count()
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }

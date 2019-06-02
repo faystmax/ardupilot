@@ -31,7 +31,7 @@ static void guided_takeoff_start(float final_alt)
     guided_mode = Guided_TakeOff;
     
     // initialise wpnav destination
-    Vector3f target_pos = inertial_nav.get_position();
+    Vector3f target_pos = telem.getInertialNav().get_position();
     target_pos.z = final_alt;
     wp_nav.set_wp_destination(target_pos);
 
@@ -55,7 +55,7 @@ void guided_pos_control_start()
     // To-Do: set to current location if disarmed?
     // To-Do: set to stopping point altitude?
     Vector3f stopping_point;
-    stopping_point.z = inertial_nav.get_altitude();
+    stopping_point.z = telem.getInertialNav().get_altitude();
     wp_nav.get_wp_stopping_point_xy(stopping_point);
     wp_nav.set_wp_destination(stopping_point);
     guided_pilot_yaw_override_yaw = false;

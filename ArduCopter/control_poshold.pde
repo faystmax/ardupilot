@@ -151,10 +151,10 @@ static void poshold_run()
     float controller_to_pilot_roll_mix; // mix of controller and pilot controls.  0 = fully last controller controls, 1 = fully pilot controls
     float controller_to_pilot_pitch_mix;    // mix of controller and pilot controls.  0 = fully last controller controls, 1 = fully pilot controls
     float vel_fw, vel_right;            // vehicle's current velocity in body-frame forward and right directions
-    const Vector3f& vel = inertial_nav.get_velocity();
+    const Vector3f& vel = telem.getInertialNav().get_velocity();
 
     // if not auto armed set throttle to zero and exit immediately
-    if(!ap.auto_armed || !inertial_nav.position_ok()) {
+    if(!ap.auto_armed || !telem.getInertialNav().position_ok()) {
         wp_nav.init_loiter_target();
         attitude_control.relax_bf_rate_controller();
         attitude_control.set_yaw_target_to_current_heading();
@@ -408,7 +408,7 @@ static void poshold_run()
             poshold.pitch_mode = POSHOLD_BRAKE_TO_LOITER;
             poshold.brake_to_loiter_timer = POSHOLD_BRAKE_TO_LOITER_TIMER;
             // init loiter controller
-            wp_nav.init_loiter_target(inertial_nav.get_position(), poshold.loiter_reset_I); // (false) to avoid I_term reset. In original code, velocity(0,0,0) was used instead of current velocity: wp_nav.init_loiter_target(inertial_nav.get_position(), Vector3f(0,0,0));
+            wp_nav.init_loiter_target(telem.getInertialNav().get_position(), poshold.loiter_reset_I); // (false) to avoid I_term reset. In original code, velocity(0,0,0) was used instead of current velocity: wp_nav.init_loiter_target(inertial_nav.get_position(), Vector3f(0,0,0));
             // at this stage, we are going to run update_loiter that will reset I_term once. From now, we ensure next time that we will enter loiter and update it, I_term won't be reset anymore
             poshold.loiter_reset_I = false;
             // set delay to start of wind compensation estimate updates
@@ -598,7 +598,7 @@ static void poshold_update_wind_comp_estimate()
     }
 
     // check horizontal velocity is low
-    if (inertial_nav.get_velocity_xy() > POSHOLD_WIND_COMP_ESTIMATE_SPEED_MAX) {
+    if (telem.getInertialNav().get_velocity_xy() > POSHOLD_WIND_COMP_ESTIMATE_SPEED_MAX) {
         return;
     }
 

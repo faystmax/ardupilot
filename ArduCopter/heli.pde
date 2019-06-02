@@ -53,7 +53,7 @@ static void check_dynamic_flight(void)
     // with GPS lock use inertial nav to determine if we are moving
     if (GPS_ok()) {
         // get horizontal velocity
-        float velocity = inertial_nav.get_velocity_xy();
+        float velocity = telem.getInertialNav().get_velocity_xy();
         moving = (velocity >= HELI_DYNAMIC_FLIGHT_SPEED_MIN);
     }else{
         // with no GPS lock base it on throttle and forward lean angle

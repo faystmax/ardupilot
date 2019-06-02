@@ -57,7 +57,7 @@ static void drift_run()
     pilot_throttle_scaled = get_pilot_desired_throttle(g.rc_3.control_in);
 
     // Grab inertial velocity
-    const Vector3f& vel = inertial_nav.get_velocity();
+    const Vector3f& vel = telem.getInertialNav().get_velocity();
 
     // rotate roll, pitch input from north facing to vehicle's perspective
     float roll_vel =  vel.y * telem.getAhrs().cos_yaw() - vel.x * telem.getAhrs().sin_yaw(); // body roll vel

@@ -11,7 +11,7 @@ static void init_home()
 
     telem.getAhrs().set_home(loc);
 
-    inertial_nav.setup_home_position();
+    telem.getInertialNav().setup_home_position();
 
     // log new home position which mission library will pull from ahrs
     if (should_log(MASK_LOG_CMD)) {

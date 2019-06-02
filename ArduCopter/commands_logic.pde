@@ -303,7 +303,7 @@ static void do_takeoff(const AP_Mission::Mission_Command& cmd)
 // do_nav_wp - initiate move to next waypoint
 static void do_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
-    const Vector3f &curr_pos = inertial_nav.get_position();
+    const Vector3f &curr_pos = telem.getInertialNav().get_position();
     Vector3f local_pos = pv_location_to_vector(cmd.content.location);
 
     // set target altitude to current altitude if not provided
@@ -360,7 +360,7 @@ static void do_loiter_unlimited(const AP_Mission::Mission_Command& cmd)
     Vector3f target_pos;
 
     // get current position
-    Vector3f curr_pos = inertial_nav.get_position();
+    Vector3f curr_pos = telem.getInertialNav().get_position();
 
     // default to use position provided
     target_pos = pv_location_to_vector(cmd.content.location);
@@ -383,7 +383,7 @@ static void do_loiter_unlimited(const AP_Mission::Mission_Command& cmd)
 // do_circle - initiate moving in a circle
 static void do_circle(const AP_Mission::Mission_Command& cmd)
 {
-    Vector3f curr_pos = inertial_nav.get_position();
+    Vector3f curr_pos = telem.getInertialNav().get_position();
     Vector3f circle_center = pv_location_to_vector(cmd.content.location);
     uint8_t circle_radius_m = HIGHBYTE(cmd.p1); // circle radius held in high byte of p1
     bool move_to_edge_required = false;
@@ -429,7 +429,7 @@ static void do_loiter_time(const AP_Mission::Mission_Command& cmd)
     Vector3f target_pos;
 
     // get current position
-    Vector3f curr_pos = inertial_nav.get_position();
+    Vector3f curr_pos = telem.getInertialNav().get_position();
 
     // default to use position provided
     target_pos = pv_location_to_vector(cmd.content.location);
@@ -503,7 +503,7 @@ static void do_nav_guided(const AP_Mission::Mission_Command& cmd)
     nav_guided.start_time = millis();
 
     // record start position so it can be compared vs horizontal limit
-    nav_guided.start_position = inertial_nav.get_position();
+    nav_guided.start_position = telem.getInertialNav().get_position();
 
     // set spline navigation target
     auto_nav_guided_start();
@@ -631,7 +631,7 @@ static bool verify_circle(const AP_Mission::Mission_Command& cmd)
     // check if we've reached the edge
     if (auto_mode == Auto_CircleMoveToEdge) {
         if (wp_nav.reached_wp_destination()) {
-            Vector3f curr_pos = inertial_nav.get_position();
+            Vector3f curr_pos = telem.getInertialNav().get_position();
             Vector3f circle_center = pv_location_to_vector(cmd.content.location);
 
             // set target altitude if not provided
@@ -698,7 +698,7 @@ static bool verify_nav_guided(const AP_Mission::Mission_Command& cmd)
     }
 
     // get current location
-    const Vector3f& curr_pos = inertial_nav.get_position();
+    const Vector3f& curr_pos = telem.getInertialNav().get_position();
 
     // check if we have gone below min alt
     if (cmd.content.nav_guided.alt_min != 0 && (curr_pos.z / 100) < cmd.content.nav_guided.alt_min) {

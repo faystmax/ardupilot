@@ -594,11 +594,11 @@ AC_AttitudeControl_Heli attitude_control(telem.getAhrs(), aparm, motors, g.p_sta
 AC_AttitudeControl attitude_control(telem.getAhrs(), aparm, motors, g.p_stabilize_roll, g.p_stabilize_pitch, g.p_stabilize_yaw,
                         g.pid_rate_roll, g.pid_rate_pitch, g.pid_rate_yaw);
 #endif
-AC_PosControl pos_control(telem.getAhrs(), inertial_nav, motors, attitude_control,
+AC_PosControl pos_control(telem.getAhrs(), telem.getInertialNav(), motors, attitude_control,
                         g.p_alt_hold, g.p_throttle_rate, g.pid_throttle_accel,
                         g.p_loiter_pos, g.pid_loiter_rate_lat, g.pid_loiter_rate_lon);
-static AC_WPNav wp_nav(inertial_nav, telem.getAhrs(), pos_control);
-static AC_Circle circle_nav(inertial_nav, telem.getAhrs(), pos_control);
+static AC_WPNav wp_nav(telem.getInertialNav(), telem.getAhrs(), pos_control);
+static AC_Circle circle_nav(telem.getInertialNav(), telem.getAhrs(), pos_control);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Performance monitoring
@@ -651,7 +651,7 @@ static AP_Mount camera_mount2(&current_loc, telem.getAhrs(), 1);
 // AC_Fence library to reduce fly-aways
 ////////////////////////////////////////////////////////////////////////////////
 #if AC_FENCE == ENABLED
-AC_Fence    fence(&inertial_nav);
+AC_Fence    fence(&telem.getInertialNav());
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -665,7 +665,7 @@ AP_Rally rally(telem.getAhrs());
 // Crop Sprayer
 ////////////////////////////////////////////////////////////////////////////////
 #if SPRAYER == ENABLED
-static AC_Sprayer sprayer(&inertial_nav);
+static AC_Sprayer sprayer(&telem.getInertialNav());
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

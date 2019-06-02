@@ -58,7 +58,7 @@ static float get_roi_yaw()
     roi_yaw_counter++;
     if (roi_yaw_counter >= 10) {
         roi_yaw_counter = 0;
-        yaw_look_at_WP_bearing = pv_get_bearing_cd(inertial_nav.get_position(), roi_WP);
+        yaw_look_at_WP_bearing = pv_get_bearing_cd(telem.getInertialNav().get_position(), roi_WP);
     }
 
     return yaw_look_at_WP_bearing;

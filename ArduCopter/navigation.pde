@@ -17,10 +17,10 @@ static void run_nav_updates(void)
 
 // calc_position - get lat and lon positions from inertial nav library
 static void calc_position(){
-    if( inertial_nav.position_ok() ) {
+    if( telem.getInertialNav().position_ok() ) {
         // pull position from interial nav library
-        current_loc.lng = inertial_nav.get_longitude();
-        current_loc.lat = inertial_nav.get_latitude();
+        current_loc.lng = telem.getInertialNav().get_longitude();
+        current_loc.lat = telem.getInertialNav().get_latitude();
     }
 }
 
@@ -61,7 +61,7 @@ static void calc_wp_bearing()
 // calc_home_distance_and_bearing - calculate distance and bearing to home for reporting and autopilot decisions
 static void calc_home_distance_and_bearing()
 {
-    Vector3f curr = inertial_nav.get_position();
+    Vector3f curr = telem.getInertialNav().get_position();
 
     // calculate home distance and bearing
     if (GPS_ok()) {

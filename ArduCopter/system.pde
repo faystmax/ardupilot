@@ -230,7 +230,7 @@ static void init_ardupilot()
     }
 
     // initialise inertial nav
-    inertial_nav.init();
+    telem.getInertialNav().init();
 
 #ifdef USERHOOK_INIT
     USERHOOK_INIT
