@@ -533,7 +533,7 @@ static bool pre_arm_gps_checks(bool display_failure)
     }
 
     // check GPS is not glitching
-    if (gps_glitch.glitching()) {
+    if (telem.getGpsGlitch().glitching()) {
         if (display_failure) {
             gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: GPS Glitch"));
         }

@@ -1048,7 +1048,7 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: GPSGLITCH_
     // @Path: ../libraries/AP_GPS/AP_GPS_Glitch.cpp
-    GOBJECT(gps_glitch,      "GPSGLITCH_",   GPS_Glitch),
+    GOBJECT(telem.getGpsGlitch(),      "GPSGLITCH_",   GPS_Glitch),
 
     // @Group: BAROGLTCH_
     // @Path: ../libraries/AP_Baro/AP_Baro_Glitch.cpp
