@@ -146,7 +146,7 @@ static bool init_arm_motors()
     // --------------------
     init_simple_bearing();
 
-    initial_armed_bearing = ahrs.yaw_sensor;
+    initial_armed_bearing = telem.getAhrs().yaw_sensor;
 
     // Reset home position
     // -------------------
@@ -175,11 +175,11 @@ static bool init_arm_motors()
     inertial_nav.set_altitude(0.0f);
 
     // go back to normal AHRS gains
-    ahrs.set_fast_gains(false);
+    telem.getAhrs().set_fast_gains(false);
 
     // enable gps velocity based centrefugal force compensation
-    ahrs.set_correct_centrifugal(true);
-    ahrs.set_armed(true);
+    telem.getAhrs().set_correct_centrifugal(true);
+    telem.getAhrs().set_armed(true);
 
     // set hover throttle
     motors.set_mid_throttle(g.throttle_mid);
@@ -630,7 +630,7 @@ static bool arm_checks(bool display_failure, bool arming_from_gcs)
 
     // check lean angle
     if ((g.arming_check == ARMING_CHECK_ALL) || (g.arming_check & ARMING_CHECK_INS)) {
-        if (labs(ahrs.roll_sensor) > aparm.angle_max || labs(ahrs.pitch_sensor) > aparm.angle_max) {
+        if (labs(telem.getAhrs().roll_sensor) > aparm.angle_max || labs(telem.getAhrs().pitch_sensor) > aparm.angle_max) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("Arm: Leaning"));
             }
@@ -687,7 +687,7 @@ static void init_disarm_motors()
     mission.reset();
 
     // setup fast AHRS gains to get right attitude
-    ahrs.set_fast_gains(true);
+    telem.getAhrs().set_fast_gains(true);
 
     // log disarm to the dataflash
     Log_Write_Event(DATA_DISARMED);
@@ -698,8 +698,8 @@ static void init_disarm_motors()
     }
 
     // disable gps velocity based centrefugal force compensation
-    ahrs.set_correct_centrifugal(false);
-    ahrs.set_armed(false);
+    telem.getAhrs().set_correct_centrifugal(false);
+    telem.getAhrs().set_armed(false);
 }
 
 /*****************************************

@@ -17,7 +17,7 @@ static void update_land_detector()
     bool target_climb_rate_low = !pos_control.is_active_z() || (pos_control.get_desired_velocity().z <= LAND_DETECTOR_DESIRED_CLIMBRATE_MAX);
     bool motor_at_lower_limit = motors.limit.throttle_lower;
     bool throttle_low = (FRAME_CONFIG == HELI_FRAME) || (motors.get_throttle_out() < get_non_takeoff_throttle());
-    bool not_rotating_fast = (ahrs.get_gyro().length() < LAND_DETECTOR_ROTATION_MAX);
+    bool not_rotating_fast = (telem.getAhrs().get_gyro().length() < LAND_DETECTOR_ROTATION_MAX);
 
     if (climb_rate_low && target_climb_rate_low && motor_at_lower_limit && throttle_low && not_rotating_fast) {
         if (!ap.land_complete) {

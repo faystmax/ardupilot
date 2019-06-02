@@ -66,7 +66,7 @@ static int16_t read_sonar(void)
 
  #if SONAR_TILT_CORRECTION == 1
     // correct alt for angle of the sonar
-    float temp = ahrs.cos_pitch() * ahrs.cos_roll();
+    float temp = telem.getAhrs().cos_pitch() * telem.getAhrs().cos_roll();
     temp = max(temp, 0.707f);
     temp_alt = (float)temp_alt * temp;
  #endif
@@ -85,7 +85,7 @@ static void init_compass()
         Log_Write_Error(ERROR_SUBSYSTEM_COMPASS,ERROR_CODE_FAILED_TO_INITIALISE);
         return;
     }
-    ahrs.set_compass(&compass);
+    telem.getAhrs().set_compass(&compass);
 }
 
 static void init_optflow()

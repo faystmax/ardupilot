@@ -38,7 +38,7 @@ void crash_check()
 
     // check angles
     int32_t lean_max = aparm.angle_max + CRASH_CHECK_ANGLE_DEVIATION_CD;
-    if (labs(ahrs.roll_sensor) > lean_max || labs(ahrs.pitch_sensor) > lean_max) {
+    if (labs(telem.getAhrs().roll_sensor) > lean_max || labs(telem.getAhrs().pitch_sensor) > lean_max) {
         inverted_count++;
 
         // if we have just become inverted record the baro altitude
@@ -118,8 +118,8 @@ void parachute_check()
     const Vector3f& target_angle = attitude_control.angle_ef_targets();
 
     // check roll and pitch angles
-    if (labs(ahrs.roll_sensor - target_angle.x) > CRASH_CHECK_ANGLE_DEVIATION_CD ||
-        labs(ahrs.pitch_sensor - target_angle.y) > CRASH_CHECK_ANGLE_DEVIATION_CD) {
+    if (labs(telem.getAhrs().roll_sensor - target_angle.x) > CRASH_CHECK_ANGLE_DEVIATION_CD ||
+        labs(telem.getAhrs().pitch_sensor - target_angle.y) > CRASH_CHECK_ANGLE_DEVIATION_CD) {
         control_loss_count++;
 
         // don't let control_loss_count get too high

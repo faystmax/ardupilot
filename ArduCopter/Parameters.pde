@@ -989,7 +989,7 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: AHRS_
     // @Path: ../libraries/AP_AHRS/AP_AHRS.cpp
-    GOBJECT(ahrs,                   "AHRS_",    AP_AHRS),
+    GOBJECT(telem.getAhrs(),                   "AHRS_",    AP_AHRS),
 
 #if MOUNT == ENABLED
     // @Group: MNT_
@@ -1100,7 +1100,7 @@ const AP_Param::Info var_info[] PROGMEM = {
 #if AP_AHRS_NAVEKF_AVAILABLE
     // @Group: EKF_
     // @Path: ../libraries/AP_NavEKF/AP_NavEKF.cpp
-    GOBJECTN(ahrs.get_NavEKF(), NavEKF, "EKF_", NavEKF),
+    GOBJECTN(telem.getAhrs().get_NavEKF(), NavEKF, "EKF_", NavEKF),
 #endif
 
     // @Group: MIS_
@@ -1154,20 +1154,20 @@ static void load_parameters(void)
 
     // change the default for the AHRS_GPS_GAIN for ArduCopter
     // if it hasn't been set by the user
-    if (!ahrs.gps_gain.load()) {
-        ahrs.gps_gain.set_and_save(1.0);
+    if (!telem.getAhrs().gps_gain.load()) {
+        telem.getAhrs().gps_gain.set_and_save(1.0);
     }
     // disable centrifugal force correction, it will be enabled as part of the arming process
-    ahrs.set_correct_centrifugal(false);
-    ahrs.set_armed(false);
+    telem.getAhrs().set_correct_centrifugal(false);
+    telem.getAhrs().set_armed(false);
 
     // setup different AHRS gains for ArduCopter than the default
     // but allow users to override in their config
-    if (!ahrs._kp.load()) {
-        ahrs._kp.set_and_save(0.1);
+    if (!telem.getAhrs()._kp.load()) {
+        telem.getAhrs()._kp.set_and_save(0.1);
     }
-    if (!ahrs._kp_yaw.load()) {
-        ahrs._kp_yaw.set_and_save(0.1);
+    if (!telem.getAhrs()._kp_yaw.load()) {
+        telem.getAhrs()._kp_yaw.set_and_save(0.1);
     }
 
     // setup different Compass learn setting for ArduCopter than the default

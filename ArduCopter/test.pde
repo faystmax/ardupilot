@@ -93,15 +93,15 @@ test_compass(uint8_t argc, const Menu::arg *argv)
         return 0;
     }
 
-    ahrs.init();
-    ahrs.set_fly_forward(true);
-    ahrs.set_compass(&compass);
+    telem.getAhrs().init();
+    telem.getAhrs().set_fly_forward(true);
+    telem.getAhrs().set_compass(&compass);
     report_compass();
 
     // we need the AHRS initialised for this test
     ins.init(AP_InertialSensor::COLD_START, 
              ins_sample_rate);
-    ahrs.reset();
+    telem.getAhrs().reset();
     int16_t counter = 0;
     float heading = 0;
 
@@ -116,13 +116,13 @@ test_compass(uint8_t argc, const Menu::arg *argv)
 
             // INS
             // ---
-            ahrs.update();
+            telem.getAhrs().update();
 
             medium_loopCounter++;
             if(medium_loopCounter == 5) {
                 if (compass.read()) {
                     // Calculate heading
-                    const Matrix3f &m = ahrs.get_dcm_matrix();
+                    const Matrix3f &m = telem.getAhrs().get_dcm_matrix();
                     heading = compass.calculate_heading(m);
                     compass.learn_offsets();
                 }
@@ -168,7 +168,7 @@ test_ins(uint8_t argc, const Menu::arg *argv)
     cliSerial->printf_P(PSTR("INS\n"));
     delay(1000);
 
-    ahrs.init();
+    telem.getAhrs().init();
     ins.init(AP_InertialSensor::COLD_START, 
              ins_sample_rate);
     cliSerial->printf_P(PSTR("...done\n"));

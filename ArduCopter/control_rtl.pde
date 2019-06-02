@@ -87,8 +87,8 @@ static void rtl_climb_start()
 
 #if AC_RALLY == ENABLED
     // rally_point.alt will be the altitude of the nearest rally point or the RTL_ALT. uses absolute altitudes
-    Location rally_point = rally.calc_best_rally_or_home_location(current_loc, get_RTL_alt()+ahrs.get_home().alt);
-    rally_point.alt -= ahrs.get_home().alt; // convert to altitude above home
+    Location rally_point = rally.calc_best_rally_or_home_location(current_loc, get_RTL_alt()+telem.getAhrs().get_home().alt);
+    rally_point.alt -= telem.getAhrs().get_home().alt; // convert to altitude above home
     rally_point.alt = max(rally_point.alt, current_loc.alt);    // ensure we do not descend before reaching home
     destination.z = rally_point.alt;
 #else
@@ -112,8 +112,8 @@ static void rtl_return_start()
     // set target to above home/rally point
 #if AC_RALLY == ENABLED
     // rally_point will be the nearest rally point or home.  uses absolute altitudes
-    Location rally_point = rally.calc_best_rally_or_home_location(current_loc, get_RTL_alt()+ahrs.get_home().alt);
-    rally_point.alt -= ahrs.get_home().alt; // convert to altitude above home
+    Location rally_point = rally.calc_best_rally_or_home_location(current_loc, get_RTL_alt()+telem.getAhrs().get_home().alt);
+    rally_point.alt -= telem.getAhrs().get_home().alt; // convert to altitude above home
     rally_point.alt = max(rally_point.alt, current_loc.alt);    // ensure we do not descend before reaching home
     Vector3f destination = pv_location_to_vector(rally_point);
 #else
@@ -227,7 +227,7 @@ static void rtl_loiterathome_run()
     if ((millis() - rtl_loiter_start_time) >= (uint32_t)g.rtl_loiter_time.get()) {
         if (auto_yaw_mode == AUTO_YAW_RESETTOARMEDYAW) {
             // check if heading is within 2 degrees of heading when vehicle was armed
-            if (labs(wrap_180_cd(ahrs.yaw_sensor-initial_armed_bearing)) <= 200) {
+            if (labs(wrap_180_cd(telem.getAhrs().yaw_sensor-initial_armed_bearing)) <= 200) {
                 rtl_state_complete = true;
             }
         } else {

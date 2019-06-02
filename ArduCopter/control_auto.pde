@@ -456,7 +456,7 @@ void set_auto_yaw_mode(uint8_t yaw_mode)
 
     case AUTO_YAW_ROI:
         // point towards a location held in yaw_look_at_WP
-        yaw_look_at_WP_bearing = ahrs.yaw_sensor;
+        yaw_look_at_WP_bearing = telem.getAhrs().yaw_sensor;
         break;
 
     case AUTO_YAW_LOOK_AT_HEADING:
@@ -466,7 +466,7 @@ void set_auto_yaw_mode(uint8_t yaw_mode)
 
     case AUTO_YAW_LOOK_AHEAD:
         // Commanded Yaw to automatically look ahead.
-        yaw_look_ahead_bearing = ahrs.yaw_sensor;
+        yaw_look_ahead_bearing = telem.getAhrs().yaw_sensor;
         break;
 
     case AUTO_YAW_RESETTOARMEDYAW:

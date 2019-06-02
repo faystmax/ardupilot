@@ -10,7 +10,7 @@
 // pv_latlon_to_vector - convert lat/lon coordinates to a position vector
 Vector3f pv_location_to_vector(const Location& loc)
 {
-    const struct Location &temp_home = ahrs.get_home();
+    const struct Location &temp_home = telem.getAhrs().get_home();
     Vector3f tmp((loc.lat-temp_home.lat) * LATLON_TO_CM, (loc.lng-temp_home.lng) * LATLON_TO_CM * scaleLongDown, loc.alt);
     return tmp;
 }

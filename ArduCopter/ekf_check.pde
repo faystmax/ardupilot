@@ -40,7 +40,7 @@ void ekf_dcm_check()
     EKFCheckType check_type = CHECK_NONE;
 
     // decide if we should check ekf or dcm
-    if (ahrs.have_inertial_nav() && g.ekfcheck_thresh > 0.0f) {
+    if (telem.getAhrs().have_inertial_nav() && g.ekfcheck_thresh > 0.0f) {
         check_type = CHECK_EKF;
     } else if (g.dcmcheck_thresh > 0.0f) {
         check_type = CHECK_DCM;
@@ -106,7 +106,7 @@ void ekf_dcm_check()
 static bool dcm_over_threshold()
 {
     // return true if yaw error is over the threshold
-    return (g.dcmcheck_thresh > 0.0f && ahrs.get_error_yaw() > g.dcmcheck_thresh);
+    return (g.dcmcheck_thresh > 0.0f && telem.getAhrs().get_error_yaw() > g.dcmcheck_thresh);
 }
 
 // ekf_over_threshold - returns true if the ekf's variance are over the tolerance
@@ -124,7 +124,7 @@ static bool ekf_over_threshold()
     Vector2f offset;
     float compass_variance;
     float vel_variance;
-    ahrs.get_NavEKF().getVariances(vel_variance, posVar, hgtVar, magVar, tasVar, offset);
+    telem.getAhrs().get_NavEKF().getVariances(vel_variance, posVar, hgtVar, magVar, tasVar, offset);
     compass_variance = magVar.length();
 
     // return true if compass and velocity variance over the threshold

@@ -120,9 +120,9 @@ static NOINLINE void send_attitude(mavlink_channel_t chan)
     mavlink_msg_attitude_send(
         chan,
         millis(),
-        ahrs.roll,
-        ahrs.pitch,
-        ahrs.yaw,
+        telem.getAhrs().roll,
+        telem.getAhrs().pitch,
+        telem.getAhrs().yaw,
         gyro.x,
         gyro.y,
         gyro.z);
@@ -190,7 +190,7 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
     if (barometer.healthy()) {
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE;
     }
-    if (g.compass_enabled && compass.healthy(0) && ahrs.use_compass()) {
+    if (g.compass_enabled && compass.healthy(0) && telem.getAhrs().use_compass()) {
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_3D_MAG;
     }
     if (gps.status() > AP_GPS::NO_GPS && (!gps_glitch.glitching()||ap.usb_connected)) {
@@ -206,7 +206,7 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
         control_sensors_health &= ~MAV_SYS_STATUS_SENSOR_3D_ACCEL;
     }
 
-    if (ahrs.initialised() && !ahrs.healthy()) {
+    if (telem.getAhrs().initialised() && !telem.getAhrs().healthy()) {
         // AHRS subsystem is unhealthy
         control_sensors_health &= ~MAV_SYS_STATUS_AHRS;
     }
@@ -275,7 +275,7 @@ static void NOINLINE send_location(mavlink_channel_t chan)
         vel.x * 100,  // X speed cm/s (+ve North)
         vel.y * 100,  // Y speed cm/s (+ve East)
         vel.x * -100, // Z speed cm/s (+ve up)
-        ahrs.yaw_sensor);               // compass heading in 1/100 degree
+        telem.getAhrs().yaw_sensor);               // compass heading in 1/100 degree
 }
 
 static void NOINLINE send_nav_controller_output(mavlink_channel_t chan)
@@ -404,7 +404,7 @@ static void NOINLINE send_vfr_hud(mavlink_channel_t chan)
         chan,
         gps.ground_speed(),
         gps.ground_speed(),
-        (ahrs.yaw_sensor / 100) % 360,
+        (telem.getAhrs().yaw_sensor / 100) % 360,
         g.rc_3.servo_out/10,
         current_loc.alt / 100.0f,
         climb_rate / 100.0f);
@@ -600,7 +600,7 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
 
     case MSG_AHRS:
         CHECK_PAYLOAD_SIZE(AHRS);
-        gcs[chan-MAVLINK_COMM_0].send_ahrs(ahrs);
+        gcs[chan-MAVLINK_COMM_0].send_ahrs(telem.getAhrs());
         break;
 
     case MSG_SIMSTATE:
@@ -610,7 +610,7 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
 #endif
 #if AP_AHRS_NAVEKF_AVAILABLE
         CHECK_PAYLOAD_SIZE(AHRS2);
-        gcs[chan-MAVLINK_COMM_0].send_ahrs2(ahrs);
+        gcs[chan-MAVLINK_COMM_0].send_ahrs2(telem.getAhrs());
 #endif
         break;
 
@@ -854,7 +854,7 @@ void GCS_MAVLINK::handle_change_alt_request(AP_Mission::Mission_Command &cmd)
 {
     // add home alt if needed
     if (cmd.content.location.flags.relative_alt) {
-        cmd.content.location.alt += ahrs.get_home().alt;
+        cmd.content.location.alt += telem.getAhrs().get_home().alt;
     }
 
     // To-Do: update target altitude for loiter or waypoint controller depending upon nav mode
@@ -1114,7 +1114,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
                 // gyro offset calibration
                 ins.init_gyro();
                 // reset ahrs gyro bias
-                ahrs.reset_gyro_drift();
+                telem.getAhrs().reset_gyro_drift();
                 result = MAV_RESULT_ACCEPTED;
             }
             if (packet.param3 == 1) {
@@ -1131,7 +1131,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
                 AP_InertialSensor_UserInteract_MAVLink interact(chan);
                 if(ins.calibrate_accel(&interact, trim_roll, trim_pitch)) {
                     // reset ahrs's trim to suggested values from calibration routine
-                    ahrs.set_trim(Vector3f(trim_roll, trim_pitch, 0));
+                    telem.getAhrs().set_trim(Vector3f(trim_roll, trim_pitch, 0));
                 }
                 result = MAV_RESULT_ACCEPTED;
             }

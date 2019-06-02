@@ -476,19 +476,19 @@ static void Log_Write_Attitude()
         LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MSG),
         time_ms         : hal.scheduler->millis(),
         control_roll    : (int16_t)targets.x,
-        roll            : (int16_t)ahrs.roll_sensor,
+        roll            : (int16_t)telem.getAhrs().roll_sensor,
         control_pitch   : (int16_t)targets.y,
-        pitch           : (int16_t)ahrs.pitch_sensor,
+        pitch           : (int16_t)telem.getAhrs().pitch_sensor,
         control_yaw     : (uint16_t)targets.z,
-        yaw             : (uint16_t)ahrs.yaw_sensor,
-        error_rp        : (uint16_t)(ahrs.get_error_rp() * 100),
-        error_yaw       : (uint16_t)(ahrs.get_error_yaw() * 100)
+        yaw             : (uint16_t)telem.getAhrs().yaw_sensor,
+        error_rp        : (uint16_t)(telem.getAhrs().get_error_rp() * 100),
+        error_yaw       : (uint16_t)(telem.getAhrs().get_error_yaw() * 100)
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 
 #if AP_AHRS_NAVEKF_AVAILABLE
-    DataFlash.Log_Write_EKF(ahrs);
-    DataFlash.Log_Write_AHRS2(ahrs);
+    DataFlash.Log_Write_EKF(telem.getAhrs());
+    DataFlash.Log_Write_AHRS2(telem.getAhrs());
 #endif
 #if CONFIG_HAL_BOARD == HAL_BOARD_AVR_SITL
     sitl.Log_Write_SIMSTATE(DataFlash);

@@ -9,7 +9,7 @@ static void init_home()
     // copter uses 0 home altitude
     Location loc = gps.location();
 
-    ahrs.set_home(loc);
+    telem.getAhrs().set_home(loc);
 
     inertial_nav.setup_home_position();
 

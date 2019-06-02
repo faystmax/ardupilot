@@ -301,7 +301,7 @@ static void autotune_attitude_control()
 
         // hold the copter level for 0.25 seconds before we begin a twitch
         // reset counter if we are no longer level
-        if ((labs(ahrs.roll_sensor) > AUTOTUNE_LEVEL_ANGLE_CD) || (labs(ahrs.pitch_sensor) > AUTOTUNE_LEVEL_ANGLE_CD)) {
+        if ((labs(telem.getAhrs().roll_sensor) > AUTOTUNE_LEVEL_ANGLE_CD) || (labs(telem.getAhrs().pitch_sensor) > AUTOTUNE_LEVEL_ANGLE_CD)) {
             autotune_step_start_time = millis();
         }
 
@@ -364,13 +364,13 @@ static void autotune_attitude_control()
         // capture this iterations rotation rate and lean angle
         if (autotune_state.axis == AUTOTUNE_AXIS_ROLL) {
             // 20 Hz filter on rate
-            rotation_rate = ToDeg(fabs(ahrs.get_gyro().x)) * 100.0f;
-            lean_angle = labs(ahrs.roll_sensor);
+            rotation_rate = ToDeg(fabs(telem.getAhrs().get_gyro().x)) * 100.0f;
+            lean_angle = labs(telem.getAhrs().roll_sensor);
         }else{
             // 20 Hz filter on rate
-            // rotation_rate = rotation_rate + 0.55686f*(ToDeg(fabs(ahrs.get_gyro().y))*100.0f-rotation_rate);
-            rotation_rate = ToDeg(fabs(ahrs.get_gyro().y)) * 100.0f;
-            lean_angle = labs(ahrs.pitch_sensor);
+            // rotation_rate = rotation_rate + 0.55686f*(ToDeg(fabs(telem.getAhrs().get_gyro().y))*100.0f-rotation_rate);
+            rotation_rate = ToDeg(fabs(telem.getAhrs().get_gyro().y)) * 100.0f;
+            lean_angle = labs(telem.getAhrs().pitch_sensor);
         }
         // log this iterations lean angle and rotation rate
         Log_Write_AutoTuneDetails((int16_t)lean_angle, rotation_rate);

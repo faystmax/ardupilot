@@ -84,11 +84,11 @@ static void get_pilot_desired_angle_rates(int16_t roll_in, int16_t pitch_in, int
 
     if (g.acro_trainer != ACRO_TRAINER_DISABLED) {
         // Calculate trainer mode earth frame rate command for roll
-        int32_t roll_angle = wrap_180_cd(ahrs.roll_sensor);
+        int32_t roll_angle = wrap_180_cd(telem.getAhrs().roll_sensor);
         rate_ef_level.x = -constrain_int32(roll_angle, -ACRO_LEVEL_MAX_ANGLE, ACRO_LEVEL_MAX_ANGLE) * g.acro_balance_roll;
 
         // Calculate trainer mode earth frame rate command for pitch
-        int32_t pitch_angle = wrap_180_cd(ahrs.pitch_sensor);
+        int32_t pitch_angle = wrap_180_cd(telem.getAhrs().pitch_sensor);
         rate_ef_level.y = -constrain_int32(pitch_angle, -ACRO_LEVEL_MAX_ANGLE, ACRO_LEVEL_MAX_ANGLE) * g.acro_balance_pitch;
 
         // Calculate trainer mode earth frame rate command for yaw
@@ -118,7 +118,7 @@ static void get_pilot_desired_angle_rates(int16_t roll_in, int16_t pitch_in, int
             rate_bf_request.y += rate_bf_level.y;
             rate_bf_request.z += rate_bf_level.z;
         }else{
-            acro_level_mix = constrain_float(1-max(max(abs(roll_in), abs(pitch_in)), abs(yaw_in))/4500.0, 0, 1)*ahrs.cos_pitch();
+            acro_level_mix = constrain_float(1-max(max(abs(roll_in), abs(pitch_in)), abs(yaw_in))/4500.0, 0, 1)*telem.getAhrs().cos_pitch();
 
             // Scale leveling rates by stick input
             rate_bf_level = rate_bf_level*acro_level_mix;

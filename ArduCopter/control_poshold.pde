@@ -203,8 +203,8 @@ static void poshold_run()
 
         // convert inertial nav earth-frame velocities to body-frame
         // To-Do: move this to AP_Math (or perhaps we already have a function to do this)
-        vel_fw = vel.x*ahrs.cos_yaw() + vel.y*ahrs.sin_yaw();
-        vel_right = -vel.x*ahrs.sin_yaw() + vel.y*ahrs.cos_yaw();
+        vel_fw = vel.x*telem.getAhrs().cos_yaw() + vel.y*telem.getAhrs().sin_yaw();
+        vel_right = -vel.x*telem.getAhrs().sin_yaw() + vel.y*telem.getAhrs().cos_yaw();
         
         // If not in LOITER, retrieve latest wind compensation lean angles related to current yaw
         if (poshold.roll_mode != POSHOLD_LOITER || poshold.pitch_mode != POSHOLD_LOITER)
@@ -635,8 +635,8 @@ static void poshold_get_wind_comp_lean_angles(int16_t &roll_angle, int16_t &pitc
     poshold.wind_comp_timer = 0;
 
     // convert earth frame desired accelerations to body frame roll and pitch lean angles
-    roll_angle = (float)fast_atan((-poshold.wind_comp_ef.x*ahrs.sin_yaw() + poshold.wind_comp_ef.y*ahrs.cos_yaw())/981)*(18000/M_PI);
-    pitch_angle = (float)fast_atan(-(poshold.wind_comp_ef.x*ahrs.cos_yaw() + poshold.wind_comp_ef.y*ahrs.sin_yaw())/981)*(18000/M_PI);
+    roll_angle = (float)fast_atan((-poshold.wind_comp_ef.x*telem.getAhrs().sin_yaw() + poshold.wind_comp_ef.y*telem.getAhrs().cos_yaw())/981)*(18000/M_PI);
+    pitch_angle = (float)fast_atan(-(poshold.wind_comp_ef.x*telem.getAhrs().cos_yaw() + poshold.wind_comp_ef.y*telem.getAhrs().sin_yaw())/981)*(18000/M_PI);
 }
 
 // poshold_roll_controller_to_pilot_override - initialises transition from a controller submode (brake or loiter) to a pilot override on roll axis

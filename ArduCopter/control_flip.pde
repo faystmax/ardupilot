@@ -73,9 +73,9 @@ static bool flip_init(bool ignore_checks)
     Log_Write_Event(DATA_FLIP_START);
 
     // capture current attitude which will be used during the Flip_Recovery stage
-    flip_orig_attitude.x = constrain_float(ahrs.roll_sensor, -aparm.angle_max, aparm.angle_max);
-    flip_orig_attitude.y = constrain_float(ahrs.pitch_sensor, -aparm.angle_max, aparm.angle_max);
-    flip_orig_attitude.z = ahrs.yaw_sensor;
+    flip_orig_attitude.x = constrain_float(telem.getAhrs().roll_sensor, -aparm.angle_max, aparm.angle_max);
+    flip_orig_attitude.y = constrain_float(telem.getAhrs().pitch_sensor, -aparm.angle_max, aparm.angle_max);
+    flip_orig_attitude.z = telem.getAhrs().yaw_sensor;
 
     return true;
 }
@@ -113,7 +113,7 @@ static void flip_run()
     throttle_out = get_pilot_desired_throttle(g.rc_3.control_in);
 
     // get roll rate
-    int32_t roll_angle = ahrs.roll_sensor * flip_dir;
+    int32_t roll_angle = telem.getAhrs().roll_sensor * flip_dir;
 
     // state machine
     switch (flip_state) {
@@ -148,7 +148,7 @@ static void flip_run()
         throttle_out += FLIP_THR_INC;
 
         // check for successful recovery
-        if (fabs(flip_orig_attitude.x - (float)ahrs.roll_sensor) <= FLIP_RECOVERY_ANGLE) {
+        if (fabs(flip_orig_attitude.x - (float)telem.getAhrs().roll_sensor) <= FLIP_RECOVERY_ANGLE) {
             // restore original flight mode
             if (!set_mode(flip_orig_control_mode)) {
                 // this should never happen but just in case

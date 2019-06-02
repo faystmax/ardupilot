@@ -60,8 +60,8 @@ static void drift_run()
     const Vector3f& vel = inertial_nav.get_velocity();
 
     // rotate roll, pitch input from north facing to vehicle's perspective
-    float roll_vel =  vel.y * ahrs.cos_yaw() - vel.x * ahrs.sin_yaw(); // body roll vel
-    float pitch_vel = vel.y * ahrs.sin_yaw() + vel.x * ahrs.cos_yaw(); // body pitch vel
+    float roll_vel =  vel.y * telem.getAhrs().cos_yaw() - vel.x * telem.getAhrs().sin_yaw(); // body roll vel
+    float pitch_vel = vel.y * telem.getAhrs().sin_yaw() + vel.x * telem.getAhrs().cos_yaw(); // body pitch vel
 
     float pitch_vel2 = min(fabs(pitch_vel), 800);
 

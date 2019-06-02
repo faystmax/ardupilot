@@ -379,7 +379,7 @@ static void do_aux_switch_function(int8_t ch_function, uint8_t ch_flag)
 
 #if AP_AHRS_NAVEKF_AVAILABLE
     case AUX_SWITCH_EKF:
-        ahrs.set_ekf_use(ch_flag==AUX_SWITCH_HIGH);
+        telem.getAhrs().set_ekf_use(ch_flag==AUX_SWITCH_HIGH);
         break;
 #endif
 
@@ -455,12 +455,12 @@ static void save_trim()
     // save roll and pitch trim
     float roll_trim = ToRad((float)g.rc_1.control_in/100.0f);
     float pitch_trim = ToRad((float)g.rc_2.control_in/100.0f);
-    ahrs.add_trim(roll_trim, pitch_trim);
+    telem.getAhrs().add_trim(roll_trim, pitch_trim);
     Log_Write_Event(DATA_SAVE_TRIM);
     gcs_send_text_P(SEVERITY_HIGH, PSTR("Trim saved"));
 }
 
-// auto_trim - slightly adjusts the ahrs.roll_trim and ahrs.pitch_trim towards the current stick positions
+// auto_trim - slightly adjusts the telem.getAhrs().roll_trim and telem.getAhrs().pitch_trim towards the current stick positions
 // meant to be called continuously while the pilot attempts to keep the copter level
 static void auto_trim()
 {
@@ -477,15 +477,15 @@ static void auto_trim()
         float pitch_trim_adjustment = ToRad((float)g.rc_2.control_in / 4000.0f);
 
         // make sure accelerometer values impact attitude quickly
-        ahrs.set_fast_gains(true);
+        telem.getAhrs().set_fast_gains(true);
 
         // add trim to ahrs object
         // save to eeprom on last iteration
-        ahrs.add_trim(roll_trim_adjustment, pitch_trim_adjustment, (auto_trim_counter == 0));
+        telem.getAhrs().add_trim(roll_trim_adjustment, pitch_trim_adjustment, (auto_trim_counter == 0));
 
         // on last iteration restore leds and accel gains to normal
         if(auto_trim_counter == 0) {
-            ahrs.set_fast_gains(false);
+            telem.getAhrs().set_fast_gains(false);
             AP_Notify::flags.save_trim = false;
         }
     }

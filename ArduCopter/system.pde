@@ -309,8 +309,8 @@ static void startup_ground(bool force_gyro_cal)
     gcs_send_text_P(SEVERITY_LOW,PSTR("GROUND START"));
 
     // initialise ahrs (may push imu calibration into the mpu6000 if using that device).
-    ahrs.init();
-    ahrs.set_vehicle_class(AHRS_VEHICLE_COPTER);
+    telem.getAhrs().init();
+    telem.getAhrs().set_vehicle_class(AHRS_VEHICLE_COPTER);
 
     // Warm up and read Gyro offsets
     // -----------------------------
@@ -322,11 +322,11 @@ static void startup_ground(bool force_gyro_cal)
 
     // reset ahrs gyro bias
     if (force_gyro_cal) {
-        ahrs.reset_gyro_drift();
+        telem.getAhrs().reset_gyro_drift();
     }
 
     // setup fast AHRS gains to get right attitude
-    ahrs.set_fast_gains(true);
+    telem.getAhrs().set_fast_gains(true);
 
     // set landed flag
     set_land_complete(true);

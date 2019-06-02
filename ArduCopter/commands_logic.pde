@@ -816,7 +816,7 @@ static bool verify_yaw()
     }
 
     // check if we are within 2 degrees of the target heading
-    if (labs(wrap_180_cd(ahrs.yaw_sensor-yaw_look_at_heading)) <= 200) {
+    if (labs(wrap_180_cd(telem.getAhrs().yaw_sensor-yaw_look_at_heading)) <= 200) {
         return true;
     }else{
         return false;
@@ -885,7 +885,7 @@ static void do_set_home(const AP_Mission::Mission_Command& cmd)
         init_home();
     } else {
         Location loc = cmd.content.location;
-        ahrs.set_home(loc);
+        telem.getAhrs().set_home(loc);
         set_home_is_set(true);
     }
 }
@@ -905,7 +905,7 @@ static void do_take_picture()
 #if CAMERA == ENABLED
     camera.trigger_pic();
     if (should_log(MASK_LOG_CAMERA)) {
-        DataFlash.Log_Write_Camera(ahrs, gps, current_loc);
+        DataFlash.Log_Write_Camera(telem.getAhrs(), gps, current_loc);
     }
 #endif
 }

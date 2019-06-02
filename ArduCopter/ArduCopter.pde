@@ -509,7 +509,7 @@ static Vector3f flip_orig_attitude;         // original copter attitude before f
 ////////////////////////////////////////////////////////////////////////////////
 // FrSky telemetry support
 #if FRSKY_TELEM_ENABLED == ENABLED
-static AP_Frsky_Telem frsky_telemetry(ahrs, battery);
+static AP_Frsky_Telem frsky_telemetry(telem.getAhrs(), battery);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -588,17 +588,17 @@ static float G_Dt = 0.02;
 // To-Do: move inertial nav up or other navigation variables down here
 ////////////////////////////////////////////////////////////////////////////////
 #if FRAME_CONFIG == HELI_FRAME
-AC_AttitudeControl_Heli attitude_control(ahrs, aparm, motors, g.p_stabilize_roll, g.p_stabilize_pitch, g.p_stabilize_yaw,
+AC_AttitudeControl_Heli attitude_control(telem.getAhrs(), aparm, motors, g.p_stabilize_roll, g.p_stabilize_pitch, g.p_stabilize_yaw,
                         g.pid_rate_roll, g.pid_rate_pitch, g.pid_rate_yaw);
 #else
-AC_AttitudeControl attitude_control(ahrs, aparm, motors, g.p_stabilize_roll, g.p_stabilize_pitch, g.p_stabilize_yaw,
+AC_AttitudeControl attitude_control(telem.getAhrs(), aparm, motors, g.p_stabilize_roll, g.p_stabilize_pitch, g.p_stabilize_yaw,
                         g.pid_rate_roll, g.pid_rate_pitch, g.pid_rate_yaw);
 #endif
-AC_PosControl pos_control(ahrs, inertial_nav, motors, attitude_control,
+AC_PosControl pos_control(telem.getAhrs(), inertial_nav, motors, attitude_control,
                         g.p_alt_hold, g.p_throttle_rate, g.pid_throttle_accel,
                         g.p_loiter_pos, g.pid_loiter_rate_lat, g.pid_loiter_rate_lon);
-static AC_WPNav wp_nav(inertial_nav, ahrs, pos_control);
-static AC_Circle circle_nav(inertial_nav, ahrs, pos_control);
+static AC_WPNav wp_nav(inertial_nav, telem.getAhrs(), pos_control);
+static AC_Circle circle_nav(inertial_nav, telem.getAhrs(), pos_control);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Performance monitoring
@@ -639,12 +639,12 @@ static AP_HAL::AnalogSource* rssi_analog_source;
 // --------------------------------------
 #if MOUNT == ENABLED
 // current_loc uses the baro/gps soloution for altitude rather than gps only.
-static AP_Mount camera_mount(&current_loc, ahrs, 0);
+static AP_Mount camera_mount(&current_loc, telem.getAhrs(), 0);
 #endif
 
 #if MOUNT2 == ENABLED
 // current_loc uses the baro/gps soloution for altitude rather than gps only.
-static AP_Mount camera_mount2(&current_loc, ahrs, 1);
+static AP_Mount camera_mount2(&current_loc, telem.getAhrs(), 1);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -658,7 +658,7 @@ AC_Fence    fence(&inertial_nav);
 // Rally library
 ////////////////////////////////////////////////////////////////////////////////
 #if AC_RALLY == ENABLED
-AP_Rally rally(ahrs);
+AP_Rally rally(telem.getAhrs());
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -685,7 +685,7 @@ static AP_Parachute parachute(relay);
 ////////////////////////////////////////////////////////////////////////////////
 // terrain handling
 #if AP_TERRAIN_AVAILABLE
-AP_Terrain terrain(ahrs, mission, rally);
+AP_Terrain terrain(telem.getAhrs(), mission, rally);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1133,7 +1133,7 @@ static void one_hz_loop()
 
     if (!motors.armed()) {
         // make it possible to change ahrs orientation at runtime during initial config
-        ahrs.set_orientation();
+        telem.getAhrs().set_orientation();
 
         // check the user hasn't updated the frame orientation
         motors.set_frame_orientation(g.frame_orientation);
@@ -1174,7 +1174,7 @@ static void update_optical_flow(void)
     // if new data has arrived, process it
     if( optflow.last_update != last_of_update ) {
         last_of_update = optflow.last_update;
-        optflow.update_position(ahrs.roll, ahrs.pitch, ahrs.sin_yaw(), ahrs.cos_yaw(), current_loc.alt);      // updates internal lon and lat with estimation based on optical flow
+        optflow.update_position(telem.getAhrs().roll, telem.getAhrs().pitch, telem.getAhrs().sin_yaw(), telem.getAhrs().cos_yaw(), current_loc.alt);      // updates internal lon and lat with estimation based on optical flow
 
         // write to log at 5hz
         of_log_counter++;
@@ -1281,17 +1281,17 @@ static void
 init_simple_bearing()
 {
     // capture current cos_yaw and sin_yaw values
-    simple_cos_yaw = ahrs.cos_yaw();
-    simple_sin_yaw = ahrs.sin_yaw();
+    simple_cos_yaw = telem.getAhrs().cos_yaw();
+    simple_sin_yaw = telem.getAhrs().sin_yaw();
 
     // initialise super simple heading (i.e. heading towards home) to be 180 deg from simple mode heading
-    super_simple_last_bearing = wrap_360_cd(ahrs.yaw_sensor+18000);
+    super_simple_last_bearing = wrap_360_cd(telem.getAhrs().yaw_sensor+18000);
     super_simple_cos_yaw = simple_cos_yaw;
     super_simple_sin_yaw = simple_sin_yaw;
 
     // log the simple bearing to dataflash
     if (should_log(MASK_LOG_ANY)) {
-        Log_Write_Data(DATA_INIT_SIMPLE_BEARING, ahrs.yaw_sensor);
+        Log_Write_Data(DATA_INIT_SIMPLE_BEARING, telem.getAhrs().yaw_sensor);
     }
 }
 
@@ -1319,8 +1319,8 @@ void update_simple_mode(void)
     }
 
     // rotate roll, pitch input from north facing to vehicle's perspective
-    g.rc_1.control_in = rollx*ahrs.cos_yaw() + pitchx*ahrs.sin_yaw();
-    g.rc_2.control_in = -rollx*ahrs.sin_yaw() + pitchx*ahrs.cos_yaw();
+    g.rc_1.control_in = rollx*telem.getAhrs().cos_yaw() + pitchx*telem.getAhrs().sin_yaw();
+    g.rc_2.control_in = -rollx*telem.getAhrs().sin_yaw() + pitchx*telem.getAhrs().cos_yaw();
 }
 
 // update_super_simple_bearing - adjusts simple bearing based on location
@@ -1348,7 +1348,7 @@ static void read_AHRS(void)
     gcs_check_input();
 #endif
 
-    ahrs.update();
+    telem.getAhrs().update();
 }
 
 // read baro and sonar altitude at 10hz
@@ -1502,11 +1502,11 @@ static void tuning(){
         break;
 
     case CH6_AHRS_YAW_KP:
-        ahrs._kp_yaw.set(tuning_value);
+        telem.getAhrs()._kp_yaw.set(tuning_value);
         break;
 
     case CH6_AHRS_KP:
-        ahrs._kp.set(tuning_value);
+        telem.getAhrs()._kp.set(tuning_value);
         break;
 
     case CH6_DECLINATION:
@@ -1528,17 +1528,17 @@ static void tuning(){
         // disabled for now - we need accessor functions
     case CH6_EKF_VERTICAL_POS:
         // EKF's baro vs accel (higher rely on accels more, baro impact is reduced)
-        ahrs.get_NavEKF()._gpsVertPosNoise = tuning_value;
+        telem.getAhrs().get_NavEKF()._gpsVertPosNoise = tuning_value;
         break;
 
     case CH6_EKF_HORIZONTAL_POS:
         // EKF's gps vs accel (higher rely on accels more, gps impact is reduced)
-        ahrs.get_NavEKF()._gpsHorizPosNoise = tuning_value;
+        telem.getAhrs().get_NavEKF()._gpsHorizPosNoise = tuning_value;
         break;
 
     case CH6_EKF_ACCEL_NOISE:
         // EKF's accel noise (lower means trust accels more, gps & baro less)
-        ahrs.get_NavEKF()._accNoise = tuning_value;
+        telem.getAhrs().get_NavEKF()._accNoise = tuning_value;
         break;
 #endif
 
