@@ -116,7 +116,7 @@ static NOINLINE void send_heartbeat(mavlink_channel_t chan)
 
 static NOINLINE void send_attitude(mavlink_channel_t chan)
 {
-    const Vector3f &gyro = ins.get_gyro();
+    const Vector3f &gyro = telem.getIns().get_gyro();
     mavlink_msg_attitude_send(
         chan,
         millis(),
@@ -199,10 +199,10 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
     if (ap.rc_receiver_present && !failsafe.radio) {
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_RC_RECEIVER;
     }
-    if (!ins.get_gyro_health_all() || !ins.gyro_calibrated_ok_all()) {
+    if (!telem.getIns().get_gyro_health_all() || !telem.getIns().gyro_calibrated_ok_all()) {
         control_sensors_health &= ~MAV_SYS_STATUS_SENSOR_3D_GYRO;
     }
-    if (!ins.get_accel_health_all()) {
+    if (!telem.getIns().get_accel_health_all()) {
         control_sensors_health &= ~MAV_SYS_STATUS_SENSOR_3D_ACCEL;
     }
 
@@ -544,7 +544,7 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
 
     case MSG_RAW_IMU1:
         CHECK_PAYLOAD_SIZE(RAW_IMU);
-        gcs[chan-MAVLINK_COMM_0].send_raw_imu(ins, compass);
+        gcs[chan-MAVLINK_COMM_0].send_raw_imu(telem.getIns(), compass);
         break;
 
     case MSG_RAW_IMU2:
@@ -554,7 +554,7 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
 
     case MSG_RAW_IMU3:
         CHECK_PAYLOAD_SIZE(SENSOR_OFFSETS);
-        gcs[chan-MAVLINK_COMM_0].send_sensor_offsets(ins, compass, telem.getBaro());
+        gcs[chan-MAVLINK_COMM_0].send_sensor_offsets(telem.getIns(), compass, telem.getBaro());
         break;
 
     case MSG_CURRENT_WAYPOINT:
@@ -1112,7 +1112,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         case MAV_CMD_PREFLIGHT_CALIBRATION:
             if (packet.param1 == 1) {
                 // gyro offset calibration
-                ins.init_gyro();
+                telem.getIns().init_gyro();
                 // reset ahrs gyro bias
                 telem.getAhrs().reset_gyro_drift();
                 result = MAV_RESULT_ACCEPTED;
@@ -1129,7 +1129,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
                 float trim_roll, trim_pitch;
                 // this blocks
                 AP_InertialSensor_UserInteract_MAVLink interact(chan);
-                if(ins.calibrate_accel(&interact, trim_roll, trim_pitch)) {
+                if(telem.getIns().calibrate_accel(&interact, trim_roll, trim_pitch)) {
                     // reset ahrs's trim to suggested values from calibration routine
                     telem.getAhrs().set_trim(Vector3f(trim_roll, trim_pitch, 0));
                 }
@@ -1289,9 +1289,9 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         accels.y = packet.yacc * (GRAVITY_MSS/1000.0);
         accels.z = packet.zacc * (GRAVITY_MSS/1000.0);
 
-        ins.set_gyro(0, gyros);
+        telem.getIns().set_gyro(0, gyros);
 
-        ins.set_accel(0, accels);
+        telem.getIns().set_accel(0, accels);
 
         telem.getBaro().setHIL(packet.alt*0.001f);
         compass.setHIL(packet.roll, packet.pitch, packet.yaw);

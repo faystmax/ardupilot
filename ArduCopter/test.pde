@@ -99,7 +99,7 @@ test_compass(uint8_t argc, const Menu::arg *argv)
     report_compass();
 
     // we need the AHRS initialised for this test
-    ins.init(AP_InertialSensor::COLD_START, 
+    telem.getIns().init(AP_InertialSensor::COLD_START,
              ins_sample_rate);
     telem.getAhrs().reset();
     int16_t counter = 0;
@@ -169,16 +169,16 @@ test_ins(uint8_t argc, const Menu::arg *argv)
     delay(1000);
 
     telem.getAhrs().init();
-    ins.init(AP_InertialSensor::COLD_START, 
+    telem.getIns().init(AP_InertialSensor::COLD_START,
              ins_sample_rate);
     cliSerial->printf_P(PSTR("...done\n"));
 
     delay(50);
 
     while(1) {
-        ins.update();
-        gyro = ins.get_gyro();
-        accel = ins.get_accel();
+        telem.getIns().update();
+        gyro = telem.getIns().get_gyro();
+        accel = telem.getIns().get_accel();
 
         float test = accel.length() / GRAVITY_MSS;
 

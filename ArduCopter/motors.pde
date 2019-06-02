@@ -158,7 +158,7 @@ static bool init_arm_motors()
     if(did_ground_start == false) {
         startup_ground(true);
         // final check that gyros calibrated successfully
-        if (((g.arming_check == ARMING_CHECK_ALL) || (g.arming_check & ARMING_CHECK_INS)) && !ins.gyro_calibrated_ok_all()) {
+        if (((g.arming_check == ARMING_CHECK_ALL) || (g.arming_check & ARMING_CHECK_INS)) && !telem.getIns().gyro_calibrated_ok_all()) {
             gcs_send_text_P(SEVERITY_HIGH,PSTR("Arm: Gyro cal failed"));
             AP_Notify::flags.armed = false;
             failsafe_enable();
@@ -347,7 +347,7 @@ static void pre_arm_checks(bool display_failure)
     // check INS
     if ((g.arming_check == ARMING_CHECK_ALL) || (g.arming_check & ARMING_CHECK_INS)) {
         // check accelerometers have been calibrated
-        if(!ins.calibrated()) {
+        if(!telem.getIns().calibrated()) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: INS not calibrated"));
             }
@@ -355,7 +355,7 @@ static void pre_arm_checks(bool display_failure)
         }
 
         // check accels are healthy
-        if(!ins.get_accel_health_all()) {
+        if(!telem.getIns().get_accel_health_all()) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Accels not healthy"));
             }
@@ -364,11 +364,11 @@ static void pre_arm_checks(bool display_failure)
 
 #if INS_MAX_INSTANCES > 1
         // check all accelerometers point in roughly same direction
-        if (ins.get_accel_count() > 1) {
-            const Vector3f &prime_accel_vec = ins.get_accel();
-            for(uint8_t i=0; i<ins.get_accel_count(); i++) {
+        if (telem.getIns().get_accel_count() > 1) {
+            const Vector3f &prime_accel_vec = telem.getIns().get_accel();
+            for(uint8_t i=0; i<telem.getIns().get_accel_count(); i++) {
                 // get next accel vector
-                const Vector3f &accel_vec = ins.get_accel(i);
+                const Vector3f &accel_vec = telem.getIns().get_accel(i);
                 Vector3f vec_diff = accel_vec - prime_accel_vec;
                 if (vec_diff.length() > PREARM_MAX_ACCEL_VECTOR_DIFF) {
                     if (display_failure) {
@@ -381,7 +381,7 @@ static void pre_arm_checks(bool display_failure)
 #endif
 
         // check gyros are healthy
-        if(!ins.get_gyro_health_all()) {
+        if(!telem.getIns().get_gyro_health_all()) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Gyros not healthy"));
             }
@@ -389,7 +389,7 @@ static void pre_arm_checks(bool display_failure)
         }
 
         // check gyros calibrated successfully
-        if(!ins.gyro_calibrated_ok_all()) {
+        if(!telem.getIns().gyro_calibrated_ok_all()) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Gyro cal failed"));
             }
@@ -398,10 +398,10 @@ static void pre_arm_checks(bool display_failure)
 
 #if INS_MAX_INSTANCES > 1
         // check all gyros are consistent
-        if (ins.get_gyro_count() > 1) {
-            for(uint8_t i=0; i<ins.get_gyro_count(); i++) {
+        if (telem.getIns().get_gyro_count() > 1) {
+            for(uint8_t i=0; i<telem.getIns().get_gyro_count(); i++) {
                 // get rotation rate difference between gyro #i and primary gyro
-                Vector3f vec_diff = ins.get_gyro(i) - ins.get_gyro();
+                Vector3f vec_diff = telem.getIns().get_gyro(i) - telem.getIns().get_gyro();
                 if (vec_diff.length() > PREARM_MAX_GYRO_VECTOR_DIFF) {
                     if (display_failure) {
                         gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Gyros inconsistent"));

@@ -314,7 +314,7 @@ static void startup_ground(bool force_gyro_cal)
 
     // Warm up and read Gyro offsets
     // -----------------------------
-    ins.init(force_gyro_cal?AP_InertialSensor::COLD_START:AP_InertialSensor::WARM_START,
+    telem.getIns().init(force_gyro_cal?AP_InertialSensor::COLD_START:AP_InertialSensor::WARM_START,
              ins_sample_rate);
  #if CLI_ENABLED == ENABLED
     report_ins();

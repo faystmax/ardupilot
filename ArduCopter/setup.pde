@@ -424,8 +424,8 @@ print_switch(uint8_t p, uint8_t m, bool b)
 static void
 print_accel_offsets_and_scaling(void)
 {
-    const Vector3f &accel_offsets = ins.get_accel_offsets();
-    const Vector3f &accel_scale = ins.get_accel_scale();
+    const Vector3f &accel_offsets = telem.getIns().get_accel_offsets();
+    const Vector3f &accel_scale = telem.getIns().get_accel_scale();
     cliSerial->printf_P(PSTR("A_off: %4.2f, %4.2f, %4.2f\nA_scale: %4.2f, %4.2f, %4.2f\n"),
                     (float)accel_offsets.x,                           // Pitch
                     (float)accel_offsets.y,                           // Roll
@@ -438,7 +438,7 @@ print_accel_offsets_and_scaling(void)
 static void
 print_gyro_offsets(void)
 {
-    const Vector3f &gyro_offsets = ins.get_gyro_offsets();
+    const Vector3f &gyro_offsets = telem.getIns().get_gyro_offsets();
     cliSerial->printf_P(PSTR("G_off: %4.2f, %4.2f, %4.2f\n"),
                     (float)gyro_offsets.x,
                     (float)gyro_offsets.y,

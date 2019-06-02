@@ -945,7 +945,7 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: INS_
     // @Path: ../libraries/AP_InertialSensor/AP_InertialSensor.cpp
-    GOBJECT(ins,            "INS_", AP_InertialSensor),
+    GOBJECT(telem.getIns(),            "INS_", AP_InertialSensor),
 
     // @Group: INAV_
     // @Path: ../libraries/AP_InertialNav/AP_InertialNav.cpp

@@ -1080,7 +1080,7 @@ static void fifty_hz_logging_loop()
     }
 
     if (should_log(MASK_LOG_IMU)) {
-        DataFlash.Log_Write_IMU(ins);
+        DataFlash.Log_Write_IMU(telem.getIns());
     }
 #endif
 }
