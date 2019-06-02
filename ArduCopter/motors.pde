@@ -276,7 +276,7 @@ static void pre_arm_checks(bool display_failure)
     // check Compass
     if ((g.arming_check == ARMING_CHECK_ALL) || (g.arming_check & ARMING_CHECK_COMPASS)) {
         // check the primary compass is healthy
-        if(!compass.healthy(0)) {
+        if(!telem.getCompass().healthy(0)) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Compass not healthy"));
             }
@@ -284,7 +284,7 @@ static void pre_arm_checks(bool display_failure)
         }
 
         // check compass learning is on or offsets have been set
-        if(!compass.configured()) {
+        if(!telem.getCompass().configured()) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Compass not calibrated"));
             }
@@ -292,7 +292,7 @@ static void pre_arm_checks(bool display_failure)
         }
 
         // check for unreasonable compass offsets
-        Vector3f offsets = compass.get_offsets();
+        Vector3f offsets = telem.getCompass().get_offsets();
         if(offsets.length() > 500) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Compass offsets too high"));
@@ -301,7 +301,7 @@ static void pre_arm_checks(bool display_failure)
         }
 
         // check for unreasonable mag field length
-        float mag_field = compass.get_field().length();
+        float mag_field = telem.getCompass().get_field().length();
         if (mag_field > COMPASS_MAGFIELD_EXPECTED*1.65 || mag_field < COMPASS_MAGFIELD_EXPECTED*0.35) {
             if (display_failure) {
                 gcs_send_text_P(SEVERITY_HIGH,PSTR("PreArm: Check mag field"));
@@ -311,12 +311,12 @@ static void pre_arm_checks(bool display_failure)
 
 #if COMPASS_MAX_INSTANCES > 1
         // check all compasses point in roughly same direction
-        if (compass.get_count() > 1) {
-            Vector3f prime_mag_vec = compass.get_field();
+        if (telem.getCompass().get_count() > 1) {
+            Vector3f prime_mag_vec = telem.getCompass().get_field();
             prime_mag_vec.normalize();
-            for(uint8_t i=0; i<compass.get_count(); i++) {
+            for(uint8_t i=0; i<telem.getCompass().get_count(); i++) {
                 // get next compass
-                Vector3f mag_vec = compass.get_field(i);
+                Vector3f mag_vec = telem.getCompass().get_field(i);
                 mag_vec.normalize();
                 Vector3f vec_diff = mag_vec - prime_mag_vec;
                 if (vec_diff.length() > COMPASS_ACCEPTABLE_VECTOR_DIFF) {
@@ -668,8 +668,8 @@ static void init_disarm_motors()
     telem.getInertialNav().ignore_next_error();
 
     // save offsets if automatic offset learning is on
-    if (compass.learn_offsets_enabled()) {
-        compass.save_offsets();
+    if (telem.getCompass().learn_offsets_enabled()) {
+        telem.getCompass().save_offsets();
     }
 
     g.throttle_cruise.save();

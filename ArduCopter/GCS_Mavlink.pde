@@ -190,7 +190,7 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
     if (telem.getBaro().healthy()) {
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE;
     }
-    if (g.compass_enabled && compass.healthy(0) && telem.getAhrs().use_compass()) {
+    if (g.compass_enabled && telem.getCompass().healthy(0) && telem.getAhrs().use_compass()) {
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_3D_MAG;
     }
     if (telem.getGps().status() > AP_GPS::NO_GPS && (!telem.getGpsGlitch().glitching()||ap.usb_connected)) {
@@ -1144,12 +1144,12 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         case MAV_CMD_PREFLIGHT_SET_SENSOR_OFFSETS:
             if (packet.param1 == 2) {
                 // save first compass's offsets
-                compass.set_and_save_offsets(0, packet.param2, packet.param3, packet.param4);
+                telem.getCompass().set_and_save_offsets(0, packet.param2, packet.param3, packet.param4);
                 result = MAV_RESULT_ACCEPTED;
             }
             if (packet.param1 == 5) {
                 // save secondary compass's offsets
-                compass.set_and_save_offsets(1, packet.param2, packet.param3, packet.param4);
+                telem.getCompass().set_and_save_offsets(1, packet.param2, packet.param3, packet.param4);
                 result = MAV_RESULT_ACCEPTED;
             }
             break;
@@ -1294,7 +1294,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         telem.getIns().set_accel(0, accels);
 
         telem.getBaro().setHIL(packet.alt*0.001f);
-        compass.setHIL(packet.roll, packet.pitch, packet.yaw);
+        telem.getCompass().setHIL(packet.roll, packet.pitch, packet.yaw);
 
         break;
     }

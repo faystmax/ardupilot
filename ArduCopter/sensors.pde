@@ -79,7 +79,7 @@ static int16_t read_sonar(void)
 
 static void init_compass()
 {
-    if (!compass.init() || !compass.read()) {
+    if (!telem.getCompass().init() || !telem.getCompass().read()) {
         // make sure we don't pass a broken compass to DCM
         cliSerial->println_P(PSTR("COMPASS INIT ERROR"));
         Log_Write_Error(ERROR_SUBSYSTEM_COMPASS,ERROR_CODE_FAILED_TO_INITIALISE);
@@ -108,7 +108,7 @@ static void read_battery(void)
 
     // update compass with current value
     if (battery.monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) {
-        compass.set_current(battery.current_amps());
+        telem.getCompass().set_current(battery.current_amps());
     }
 
     // check for low voltage or current if the low voltage check hasn't already been triggered

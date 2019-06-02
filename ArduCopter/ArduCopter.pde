@@ -1247,7 +1247,7 @@ static void update_GPS(void)
                         
                         if (g.compass_enabled) {
                             // Set compass declination automatically
-                            compass.set_initial_location(telem.getGps().location().lat, telem.getGps().location().lng);
+                            telem.getCompass().set_initial_location(telem.getGps().location().lat, telem.getGps().location().lng);
                         }
                     }
                 } else {

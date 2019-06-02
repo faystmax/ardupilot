@@ -457,12 +457,12 @@ static void report_compass()
 
     // mag declination
     cliSerial->printf_P(PSTR("Mag Dec: %4.4f\n"),
-                    degrees(compass.get_declination()));
+                    degrees(telem.getCompass().get_declination()));
 
     // mag offsets
     Vector3f offsets;
-    for (uint8_t i=0; i<compass.get_count(); i++) {
-        offsets = compass.get_offsets(i);
+    for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
+        offsets = telem.getCompass().get_offsets(i);
         // mag offsets
         cliSerial->printf_P(PSTR("Mag%d off: %4.4f, %4.4f, %4.4f\n"),
                         (int)i,
@@ -473,18 +473,18 @@ static void report_compass()
 
     // motor compensation
     cliSerial->print_P(PSTR("Motor Comp: "));
-    if( compass.motor_compensation_type() == AP_COMPASS_MOT_COMP_DISABLED ) {
+    if( telem.getCompass().motor_compensation_type() == AP_COMPASS_MOT_COMP_DISABLED ) {
         cliSerial->print_P(PSTR("Off\n"));
     }else{
-        if( compass.motor_compensation_type() == AP_COMPASS_MOT_COMP_THROTTLE ) {
+        if( telem.getCompass().motor_compensation_type() == AP_COMPASS_MOT_COMP_THROTTLE ) {
             cliSerial->print_P(PSTR("Throttle"));
         }
-        if( compass.motor_compensation_type() == AP_COMPASS_MOT_COMP_CURRENT ) {
+        if( telem.getCompass().motor_compensation_type() == AP_COMPASS_MOT_COMP_CURRENT ) {
             cliSerial->print_P(PSTR("Current"));
         }
         Vector3f motor_compensation;
-        for (uint8_t i=0; i<compass.get_count(); i++) {
-            motor_compensation = compass.get_motor_compensation(i);
+        for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
+            motor_compensation = telem.getCompass().get_motor_compensation(i);
             cliSerial->printf_P(PSTR("\nComMot%d: %4.2f, %4.2f, %4.2f\n"),
                         (int)i,
                         motor_compensation.x,

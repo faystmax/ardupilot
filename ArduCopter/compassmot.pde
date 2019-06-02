@@ -37,9 +37,9 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
     }
 
     // check compass health
-    compass.read();
-    for (uint8_t i=0; i<compass.get_count(); i++) {
-        if (!compass.healthy(i)) {
+    telem.getCompass().read();
+    for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
+        if (!telem.getCompass().healthy(i)) {
             gcs[chan-MAVLINK_COMM_0].send_text_P(SEVERITY_HIGH, PSTR("check compass"));
             ap.compass_mot = false;
             return 1;
@@ -104,22 +104,22 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
     g.failsafe_gps_enabled = FS_GPS_DISABLED;
 
     // disable motor compensation
-    compass.motor_compensation_type(AP_COMPASS_MOT_COMP_DISABLED);
-    for (uint8_t i=0; i<compass.get_count(); i++) {
-        compass.set_motor_compensation(i, Vector3f(0,0,0));
+    telem.getCompass().motor_compensation_type(AP_COMPASS_MOT_COMP_DISABLED);
+    for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
+        telem.getCompass().set_motor_compensation(i, Vector3f(0,0,0));
     }
 
     // get initial compass readings
     last_run_time = millis();
     while ( millis() - last_run_time < 500 ) {
-        compass.accumulate();
+        telem.getCompass().accumulate();
     }
-    compass.read();
+    telem.getCompass().read();
 
     // store initial x,y,z compass values
     // initialise interference percentage
-    for (uint8_t i=0; i<compass.get_count(); i++) {
-        compass_base[i] = compass.get_field(i);
+    for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
+        compass_base[i] = telem.getCompass().get_field(i);
         interference_pct[i] = 0.0f;
     }
 
@@ -133,11 +133,11 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
     last_send_time = millis();
 
     // main run while there is no user input and the compass is healthy
-    while (command_ack_start == command_ack_counter && compass.healthy(compass.get_primary()) && motors.armed()) {
+    while (command_ack_start == command_ack_counter && telem.getCompass().healthy(telem.getCompass().get_primary()) && motors.armed()) {
         // 50hz loop
         if (millis() - last_run_time < 20) {
             // grab some compass values
-            compass.accumulate();
+            telem.getCompass().accumulate();
             hal.scheduler->delay(5);
             continue;
         }
@@ -150,7 +150,7 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
         motors.throttle_pass_through();
         
         // read some compass values
-        compass.read();
+        telem.getCompass().read();
         
         // read current
         read_battery();
@@ -161,22 +161,22 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
 
         // if throttle is near zero, update base x,y,z values
         if (throttle_pct <= 0.0f) {
-            for (uint8_t i=0; i<compass.get_count(); i++) {
-                compass_base[i] = compass_base[i] * 0.99f + compass.get_field(i) * 0.01f;
+            for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
+                compass_base[i] = compass_base[i] * 0.99f + telem.getCompass().get_field(i) * 0.01f;
             }
 
             // causing printing to happen as soon as throttle is lifted
         } else {
 
             // calculate diff from compass base and scale with throttle
-            for (uint8_t i=0; i<compass.get_count(); i++) {
-                motor_impact[i] = compass.get_field(i) - compass_base[i];
+            for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
+                motor_impact[i] = telem.getCompass().get_field(i) - compass_base[i];
             }
 
             // throttle based compensation
             if (comp_type == AP_COMPASS_MOT_COMP_THROTTLE) {
                 // for each compass
-                for (uint8_t i=0; i<compass.get_count(); i++) {
+                for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
                     // scale by throttle
                     motor_impact_scaled[i] = motor_impact[i] / throttle_pct;
                     // adjust the motor compensation to negate the impact
@@ -186,7 +186,7 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
                 updated = true;
             } else {
                 // for each compass
-                for (uint8_t i=0; i<compass.get_count(); i++) {
+                for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
                     // current based compensation if more than 3amps being drawn
                     motor_impact_scaled[i] = motor_impact[i] / battery.current_amps();
                 
@@ -200,12 +200,12 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
 
             // calculate interference percentage at full throttle as % of total mag field
             if (comp_type == AP_COMPASS_MOT_COMP_THROTTLE) {
-                for (uint8_t i=0; i<compass.get_count(); i++) {
+                for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
                     // interference is impact@fullthrottle / mag field * 100
                     interference_pct[i] = motor_compensation[i].length() / (float)COMPASS_MAGFIELD_EXPECTED * 100.0f;
                 }
             }else{
-                for (uint8_t i=0; i<compass.get_count(); i++) {
+                for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
                     // interference is impact/amp * (max current seen / max throttle seen) / mag field * 100
                     interference_pct[i] = motor_compensation[i].length() * (current_amps_max/throttle_pct_max) / (float)COMPASS_MAGFIELD_EXPECTED * 100.0f;
                 }
@@ -221,10 +221,10 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
             mavlink_msg_compassmot_status_send(chan, 
                                                g.rc_3.control_in,
                                                battery.current_amps(),
-                                               interference_pct[compass.get_primary()],
-                                               motor_compensation[compass.get_primary()].x,
-                                               motor_compensation[compass.get_primary()].y,
-                                               motor_compensation[compass.get_primary()].z);
+                                               interference_pct[telem.getCompass().get_primary()],
+                                               motor_compensation[telem.getCompass().get_primary()].x,
+                                               motor_compensation[telem.getCompass().get_primary()].y,
+                                               motor_compensation[telem.getCompass().get_primary()].z);
         }
     }
 
@@ -234,17 +234,17 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
 
     // set and save motor compensation
     if (updated) {
-        compass.motor_compensation_type(comp_type);
-        for (uint8_t i=0; i<compass.get_count(); i++) {
-            compass.set_motor_compensation(i, motor_compensation[i]);
+        telem.getCompass().motor_compensation_type(comp_type);
+        for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
+            telem.getCompass().set_motor_compensation(i, motor_compensation[i]);
         }
-        compass.save_motor_compensation();
+        telem.getCompass().save_motor_compensation();
         // display success message
         gcs[chan-MAVLINK_COMM_0].send_text_P(SEVERITY_HIGH, PSTR("Calibration Successful!"));
     } else {
         // compensation vector never updated, report failure
         gcs[chan-MAVLINK_COMM_0].send_text_P(SEVERITY_HIGH, PSTR("Failed!"));
-        compass.motor_compensation_type(AP_COMPASS_MOT_COMP_DISABLED);
+        telem.getCompass().motor_compensation_type(AP_COMPASS_MOT_COMP_DISABLED);
     }
 
     // display new motor offsets and save
