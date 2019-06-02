@@ -29,10 +29,10 @@ static void read_barometer(void)
     baro_climbrate = telem.getBaro().get_climb_rate() * 100.0f;
 
     // run glitch protection and update AP_Notify if home has been initialised
-    baro_glitch.check_alt();
-    bool report_baro_glitch = (baro_glitch.glitching() && !ap.usb_connected && hal.util->safety_switch_state() != AP_HAL::Util::SAFETY_DISARMED);
+    telem.getBaroGlitch().check_alt();
+    bool report_baro_glitch = (telem.getBaroGlitch().glitching() && !ap.usb_connected && hal.util->safety_switch_state() != AP_HAL::Util::SAFETY_DISARMED);
     if (AP_Notify::flags.baro_glitching != report_baro_glitch) {
-        if (baro_glitch.glitching()) {
+        if (telem.getBaroGlitch().glitching()) {
             Log_Write_Error(ERROR_SUBSYSTEM_BARO, ERROR_CODE_BARO_GLITCH);
         } else {
             Log_Write_Error(ERROR_SUBSYSTEM_BARO, ERROR_CODE_ERROR_RESOLVED);
@@ -85,7 +85,7 @@ static void init_compass()
         Log_Write_Error(ERROR_SUBSYSTEM_COMPASS,ERROR_CODE_FAILED_TO_INITIALISE);
         return;
     }
-    telem.getAhrs().set_compass(&compass);
+    telem.getAhrs().set_compass(&telem.getCompass());
 }
 
 static void init_optflow()

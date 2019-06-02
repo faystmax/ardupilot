@@ -544,7 +544,7 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
 
     case MSG_RAW_IMU1:
         CHECK_PAYLOAD_SIZE(RAW_IMU);
-        gcs[chan-MAVLINK_COMM_0].send_raw_imu(telem.getIns(), compass);
+        gcs[chan-MAVLINK_COMM_0].send_raw_imu(telem.getIns(), telem.getCompass());
         break;
 
     case MSG_RAW_IMU2:
@@ -554,7 +554,7 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
 
     case MSG_RAW_IMU3:
         CHECK_PAYLOAD_SIZE(SENSOR_OFFSETS);
-        gcs[chan-MAVLINK_COMM_0].send_sensor_offsets(telem.getIns(), compass, telem.getBaro());
+        gcs[chan-MAVLINK_COMM_0].send_sensor_offsets(telem.getIns(), telem.getCompass(), telem.getBaro());
         break;
 
     case MSG_CURRENT_WAYPOINT:
@@ -623,6 +623,9 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
     case MSG_WIND:
         // unused
         break;
+
+    case MSG_BATTERY2:
+    	break; // just here to prevent a warning
 
     case MSG_RETRY_DEFERRED:
         break; // just here to prevent a warning

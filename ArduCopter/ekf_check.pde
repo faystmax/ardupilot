@@ -40,7 +40,7 @@ void ekf_dcm_check()
     EKFCheckType check_type = CHECK_NONE;
 
     // decide if we should check ekf or dcm
-    if (telem.getAhrs().have_telem.getInertialNav()() && g.ekfcheck_thresh > 0.0f) {
+    if (telem.getAhrs().have_inertial_nav() && g.ekfcheck_thresh > 0.0f) {
         check_type = CHECK_EKF;
     } else if (g.dcmcheck_thresh > 0.0f) {
         check_type = CHECK_DCM;

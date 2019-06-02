@@ -71,6 +71,9 @@ static void auto_run()
         auto_spline_run();
         break;
 
+    case Auto_NavGuided:
+    	break; // not supported yet
+
 #if NAV_GUIDED == ENABLED
     case Auto_NavGuided:
         auto_nav_guided_run();

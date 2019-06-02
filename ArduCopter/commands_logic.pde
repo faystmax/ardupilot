@@ -905,7 +905,7 @@ static void do_take_picture()
 #if CAMERA == ENABLED
     camera.trigger_pic();
     if (should_log(MASK_LOG_CAMERA)) {
-        DataFlash.Log_Write_Camera(telem.getAhrs(), gps, current_loc);
+        DataFlash.Log_Write_Camera(telem.getAhrs(), telem.getGps(), current_loc);
     }
 #endif
 }
