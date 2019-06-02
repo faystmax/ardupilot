@@ -322,9 +322,9 @@ static void report_batt_monitor()
 {
     cliSerial->printf_P(PSTR("\nBatt Mon:\n"));
     print_divider();
-    if (battery.monitoring() == AP_BATT_MONITOR_DISABLED) print_enabled(false);
-    if (battery.monitoring() == AP_BATT_MONITOR_VOLTAGE_ONLY) cliSerial->printf_P(PSTR("volts"));
-    if (battery.monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) cliSerial->printf_P(PSTR("volts and cur"));
+    if (telem.getBattery().monitoring() == AP_BATT_MONITOR_DISABLED) print_enabled(false);
+    if (telem.getBattery().monitoring() == AP_BATT_MONITOR_VOLTAGE_ONLY) cliSerial->printf_P(PSTR("volts"));
+    if (telem.getBattery().monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) cliSerial->printf_P(PSTR("volts and cur"));
     print_blanks(2);
 }
 

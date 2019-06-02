@@ -76,7 +76,7 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
     init_compass();
 
     // default compensation type to use current if possible
-    if (battery.monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) {
+    if (telem.getBattery().monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) {
         comp_type = AP_COMPASS_MOT_COMP_CURRENT;
     }else{
         comp_type = AP_COMPASS_MOT_COMP_THROTTLE;
@@ -188,10 +188,10 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
                 // for each compass
                 for (uint8_t i=0; i<telem.getCompass().get_count(); i++) {
                     // current based compensation if more than 3amps being drawn
-                    motor_impact_scaled[i] = motor_impact[i] / battery.current_amps();
+                    motor_impact_scaled[i] = motor_impact[i] / telem.getBattery().current_amps();
                 
                     // adjust the motor compensation to negate the impact if drawing over 3amps
-                    if (battery.current_amps() >= 3.0f) {
+                    if (telem.getBattery().current_amps() >= 3.0f) {
                         motor_compensation[i] = motor_compensation[i] * 0.99f - motor_impact_scaled[i] * 0.01f;
                         updated = true;
                     }
@@ -213,14 +213,14 @@ static uint8_t mavlink_compassmot(mavlink_channel_t chan)
 
             // record maximum throttle and current
             throttle_pct_max = max(throttle_pct_max, throttle_pct);
-            current_amps_max = max(current_amps_max, battery.current_amps());
+            current_amps_max = max(current_amps_max, telem.getBattery().current_amps());
 
         }
         if (hal.scheduler->millis() - last_send_time > 500) {
             last_send_time = hal.scheduler->millis();
             mavlink_msg_compassmot_status_send(chan, 
                                                g.rc_3.control_in,
-                                               battery.current_amps(),
+                                               telem.getBattery().current_amps(),
                                                interference_pct[telem.getCompass().get_primary()],
                                                motor_compensation[telem.getCompass().get_primary()].x,
                                                motor_compensation[telem.getCompass().get_primary()].y,

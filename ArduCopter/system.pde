@@ -144,7 +144,7 @@ static void init_ardupilot()
     notify.init(enable_external_leds);
 
     // initialise battery monitor
-    battery.init();
+    telem.getBattery().init();
     
     rssi_analog_source      = hal.analogin->channel(g.rssi_pin);
 

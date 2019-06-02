@@ -104,16 +104,16 @@ static void init_optflow()
 // called at 10hz
 static void read_battery(void)
 {
-    battery.read();
+    telem.getBattery().read();
 
     // update compass with current value
-    if (battery.monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) {
-        telem.getCompass().set_current(battery.current_amps());
+    if (telem.getBattery().monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) {
+        telem.getCompass().set_current(telem.getBattery().current_amps());
     }
 
     // check for low voltage or current if the low voltage check hasn't already been triggered
     // we only check when we're not powered by USB to avoid false alarms during bench tests
-    if (!ap.usb_connected && !failsafe.battery && battery.exhausted(g.fs_batt_voltage, g.fs_batt_mah)) {
+    if (!ap.usb_connected && !failsafe.battery && telem.getBattery().exhausted(g.fs_batt_voltage, g.fs_batt_mah)) {
         failsafe_battery_event();
     }
 }

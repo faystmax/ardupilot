@@ -214,9 +214,9 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
     int16_t battery_current = -1;
     int8_t battery_remaining = -1;
 
-    if (battery.monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) {
-        battery_remaining = battery.capacity_remaining_pct();
-        battery_current = battery.current_amps() * 100;
+    if (telem.getBattery().monitoring() == AP_BATT_MONITOR_VOLTAGE_AND_CURRENT) {
+        battery_remaining = telem.getBattery().capacity_remaining_pct();
+        battery_current = telem.getBattery().current_amps() * 100;
     }
 
 #if AP_TERRAIN_AVAILABLE
@@ -242,7 +242,7 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
         control_sensors_enabled,
         control_sensors_health,
         (uint16_t)(scheduler.load_average(MAIN_LOOP_MICROS) * 1000),
-        battery.voltage() * 1000, // mV
+        telem.getBattery().voltage() * 1000, // mV
         battery_current,        // in 10mA units
         battery_remaining,      // in %
         0, // comm drops %,

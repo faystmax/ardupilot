@@ -1005,7 +1005,7 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: BATT_
     // @Path: ../libraries/AP_BattMonitor/AP_BattMonitor.cpp
-    GOBJECT(battery,                "BATT_",       AP_BattMonitor),
+    GOBJECT(telem.getBattery(),                "BATT_",       AP_BattMonitor),
 
     // @Group: BRD_
     // @Path: ../libraries/AP_BoardConfig/AP_BoardConfig.cpp
