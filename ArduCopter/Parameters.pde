@@ -23,6 +23,7 @@
 #define ASCALAR(v, name, def) { aparm.v.vtype, name, Parameters::k_param_ ## v, &aparm.v, {def_value : def} }
 #define GGROUP(v, name, class) { AP_PARAM_GROUP, name, Parameters::k_param_ ## v, &g.v, {group_info : class::var_info} }
 #define GOBJECT(v, name, class) { AP_PARAM_GROUP, name, Parameters::k_param_ ## v, &v, {group_info : class::var_info} }
+#define GOBJECTW(p, v, name, class) { AP_PARAM_GROUP, name, Parameters::k_param_ ## p, &v, {group_info : class::var_infos} }
 #define GOBJECTN(v, pname, name, class) { AP_PARAM_GROUP, name, Parameters::k_param_ ## pname, &v, {group_info : class::var_info} }
 
 const AP_Param::Info var_info[] PROGMEM = {
@@ -941,15 +942,15 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: COMPASS_
     // @Path: ../libraries/AP_Compass/Compass.cpp
-    //GOBJECT(telem.getCompass(),        "COMPASS_", Compass),
+	GOBJECT(compass,      "COMPASS_", Compass),
 
     // @Group: INS_
     // @Path: ../libraries/AP_InertialSensor/AP_InertialSensor.cpp
-    //GOBJECT(telem.getIns(),            "INS_", AP_InertialSensor),
+    GOBJECT(ins,            "INS_", AP_InertialSensor),
 
     // @Group: INAV_
     // @Path: ../libraries/AP_InertialNav/AP_InertialNav.cpp
-    //GOBJECT(telem.getInertialNav(),           "INAV_",    AP_InertialNav),
+    GOBJECT(inertial_nav,           "INAV_",    AP_InertialNav),
 
     // @Group: WPNAV_
     // @Path: ../libraries/AC_WPNav/AC_WPNav.cpp
@@ -989,7 +990,7 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: AHRS_
     // @Path: ../libraries/AP_AHRS/AP_AHRS.cpp
-    //GOBJECT(telem.getAhrs(),                   "AHRS_",    AP_AHRS),
+    GOBJECT(ahrs,                   "AHRS_",    AP_AHRS),
 
 #if MOUNT == ENABLED
     // @Group: MNT_
@@ -1005,7 +1006,7 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: BATT_
     // @Path: ../libraries/AP_BattMonitor/AP_BattMonitor.cpp
-    //GOBJECT(telem.getBattery(),                "BATT_",       AP_BattMonitor),
+    GOBJECT(battery,                "BATT_",       AP_BattMonitor),
 
     // @Group: BRD_
     // @Path: ../libraries/AP_BoardConfig/AP_BoardConfig.cpp
@@ -1023,12 +1024,12 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: GND_
     // @Path: ../libraries/AP_Baro/AP_Baro.cpp
-    //GOBJECT(telem.getBaro(), "GND_", AP_Baro),
+    GOBJECT(barometer, "GND_", AP_Baro),
 
     // GPS driver
     // @Group: GPS_
     // @Path: ../libraries/AP_GPS/AP_GPS.cpp
-   // GOBJECT(telem.getGps(), "GPS_", AP_GPS),
+    GOBJECT(gps, "GPS_", AP_GPS),
 
     // @Group: SCHED_
     // @Path: ../libraries/AP_Scheduler/AP_Scheduler.cpp
@@ -1048,11 +1049,11 @@ const AP_Param::Info var_info[] PROGMEM = {
 
     // @Group: GPSGLITCH_
     // @Path: ../libraries/AP_GPS/AP_GPS_Glitch.cpp
-    //GOBJECT(telem.getGpsGlitch(),      "GPSGLITCH_",   GPS_Glitch),
+    GOBJECT(gps_glitch,      "GPSGLITCH_",   GPS_Glitch),
 
     // @Group: BAROGLTCH_
     // @Path: ../libraries/AP_Baro/AP_Baro_Glitch.cpp
-    //GOBJECT(telem.getBaroGlitch(),    "BAROGLTCH_",   Baro_Glitch),
+    GOBJECT(baro_glitch,    "BAROGLTCH_",   Baro_Glitch),
 
 #if FRAME_CONFIG ==     HELI_FRAME
     // @Group: H_

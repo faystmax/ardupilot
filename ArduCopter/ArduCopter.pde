@@ -177,9 +177,48 @@ static AP_Vehicle::MultiCopter aparm;
 #include "heli.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// Main Telemetry object
+// Define Main Telemetry objects
 ////////////////////////////////////////////////////////////////////////////////
-Telem telem;
+static AP_InertialSensor ins;
+static AP_GPS gps;
+static GPS_Glitch gps_glitch(gps);
+
+#if CONFIG_BARO == HAL_BARO_BMP085
+static AP_Baro_BMP085 barometer;
+#elif CONFIG_BARO == HAL_BARO_PX4
+static AP_Baro_PX4 barometer;
+#elif CONFIG_BARO == HAL_BARO_VRBRAIN
+static AP_Baro_VRBRAIN barometer;
+#elif CONFIG_BARO == HAL_BARO_HIL
+static AP_Baro_HIL barometer;
+#elif CONFIG_BARO == HAL_BARO_MS5611
+static AP_Baro_MS5611 barometer(&AP_Baro_MS5611::i2c);
+#elif CONFIG_BARO == HAL_BARO_MS5611_SPI
+static AP_Baro_MS5611 barometer(&AP_Baro_MS5611::spi);
+#else
+ #error Unrecognized CONFIG_BARO setting
+#endif
+
+static Baro_Glitch baro_glitch(barometer);
+
+#if CONFIG_COMPASS == HAL_COMPASS_PX4
+static AP_Compass_PX4 compass;
+#elif CONFIG_COMPASS == HAL_COMPASS_VRBRAIN
+static AP_Compass_VRBRAIN compass;
+#elif CONFIG_COMPASS == HAL_COMPASS_HMC5843
+static AP_Compass_HMC5843 compass;
+#elif CONFIG_COMPASS == HAL_COMPASS_HIL
+static AP_Compass_HIL compass;
+#else
+ #error Unrecognized CONFIG_COMPASS setting
+#endif
+
+static AP_BattMonitor battery;
+static AP_AHRS_DCM ahrs(ins, barometer, gps);
+static AP_InertialNav inertial_nav(ahrs, barometer, gps_glitch, baro_glitch);
+
+Telem telem(ins, gps, gps_glitch, barometer, baro_glitch, compass, battery, ahrs, inertial_nav);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // cliSerial
@@ -627,6 +666,7 @@ static AP_ServoRelayEvents ServoRelayEvents(relay);
 #if CAMERA == ENABLED
   static AP_Camera camera(&relay);
 #endif
+
 
 // a pin for reading the receiver RSSI voltage.
 static AP_HAL::AnalogSource* rssi_analog_source;
