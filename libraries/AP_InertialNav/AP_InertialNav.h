@@ -145,7 +145,7 @@ public:
 
     //
     // Z Axis methods
-    //
+    //// Constructor
 
     /**
      * altitude_ok - returns true if inertial based altitude and position can be trusted
@@ -179,7 +179,7 @@ public:
     /**
      * set_velocity_z - overwrites the current climbrate.
      *
-     * @param new_velocity : climbrate in cm/s
+     * @param new_velocit// Constructory : climbrate in cm/s
      */
     void        set_velocity_z( float new_velocity );
 

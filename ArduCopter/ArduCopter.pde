@@ -146,6 +146,9 @@
 #include <AP_BattMonitor.h>     // Battery monitor library
 #include <AP_BoardConfig.h>     // board configuration library
 #include <AP_Frsky_Telem.h>
+
+#include <AC_Telemetry.h>
+
 #if SPRAYER == ENABLED
 #include <AC_Sprayer.h>         // crop sprayer library
 #endif
@@ -172,6 +175,11 @@ static AP_Vehicle::MultiCopter aparm;
 
 // Heli modules
 #include "heli.h"
+
+////////////////////////////////////////////////////////////////////////////////
+// Main Telemetry object
+////////////////////////////////////////////////////////////////////////////////
+Telem telem;
 
 ////////////////////////////////////////////////////////////////////////////////
 // cliSerial
@@ -251,54 +259,13 @@ static const AP_InertialSensor::Sample_rate ins_sample_rate = AP_InertialSensor:
 //   supply data from the simulation.
 //
 
-static AP_GPS  gps;
-
-static GPS_Glitch gps_glitch(gps);
-
 // flight modes convenience array
 static AP_Int8 *flight_modes = &g.flight_mode1;
-
-#if CONFIG_BARO == HAL_BARO_BMP085
-static AP_Baro_BMP085 barometer;
-#elif CONFIG_BARO == HAL_BARO_PX4
-static AP_Baro_PX4 barometer;
-#elif CONFIG_BARO == HAL_BARO_VRBRAIN
-static AP_Baro_VRBRAIN barometer;
-#elif CONFIG_BARO == HAL_BARO_HIL
-static AP_Baro_HIL barometer;
-#elif CONFIG_BARO == HAL_BARO_MS5611
-static AP_Baro_MS5611 barometer(&AP_Baro_MS5611::i2c);
-#elif CONFIG_BARO == HAL_BARO_MS5611_SPI
-static AP_Baro_MS5611 barometer(&AP_Baro_MS5611::spi);
-#else
- #error Unrecognized CONFIG_BARO setting
-#endif
-static Baro_Glitch baro_glitch(barometer);
-
-#if CONFIG_COMPASS == HAL_COMPASS_PX4
-static AP_Compass_PX4 compass;
-#elif CONFIG_COMPASS == HAL_COMPASS_VRBRAIN
-static AP_Compass_VRBRAIN compass;
-#elif CONFIG_COMPASS == HAL_COMPASS_HMC5843
-static AP_Compass_HMC5843 compass;
-#elif CONFIG_COMPASS == HAL_COMPASS_HIL
-static AP_Compass_HIL compass;
-#else
- #error Unrecognized CONFIG_COMPASS setting
-#endif
 
 #if CONFIG_INS_TYPE == HAL_INS_OILPAN || CONFIG_HAL_BOARD == HAL_BOARD_APM1
 AP_ADC_ADS7844 apm1_adc;
 #endif
 
-AP_InertialSensor ins;
-
-// Inertial Navigation EKF
-#if AP_AHRS_NAVEKF_AVAILABLE
-AP_AHRS_NavEKF ahrs(ins, barometer, gps);
-#else
-AP_AHRS_DCM ahrs(ins, barometer, gps);
-#endif
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_AVR_SITL
 SITL sitl;
@@ -309,7 +276,7 @@ SITL sitl;
 static bool start_command(const AP_Mission::Mission_Command& cmd);
 static bool verify_command(const AP_Mission::Mission_Command& cmd);
 static void exit_mission();
-AP_Mission mission(ahrs, &start_command, &verify_command, &exit_mission);
+AP_Mission mission(telem.getAhrs(), &start_command, &verify_command, &exit_mission);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Optical flow sensor
@@ -540,11 +507,6 @@ static uint32_t loiter_time;                    // How long have we been loiteri
 static Vector3f flip_orig_attitude;         // original copter attitude before flip
 
 ////////////////////////////////////////////////////////////////////////////////
-// Battery Sensors
-////////////////////////////////////////////////////////////////////////////////
-static AP_BattMonitor battery;
-
-////////////////////////////////////////////////////////////////////////////////
 // FrSky telemetry support
 #if FRSKY_TELEM_ENABLED == ENABLED
 static AP_Frsky_Telem frsky_telemetry(ahrs, battery);
@@ -620,15 +582,6 @@ static uint32_t condition_start;
 // Integration time (in seconds) for the gyros (DCM algorithm)
 // Updated with the fast loop
 static float G_Dt = 0.02;
-
-////////////////////////////////////////////////////////////////////////////////
-// Inertial Navigation
-////////////////////////////////////////////////////////////////////////////////
-#if AP_AHRS_NAVEKF_AVAILABLE
-static AP_InertialNav_NavEKF inertial_nav(ahrs, barometer, gps_glitch, baro_glitch);
-#else
-static AP_InertialNav inertial_nav(ahrs, barometer, gps_glitch, baro_glitch);
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Attitude, Position and Waypoint navigation objects
@@ -945,7 +898,7 @@ static void perf_update(void)
 void loop()
 {
     // wait for an INS sample
-    ins.wait_for_sample();
+    telem.getIns().wait_for_sample();
     uint32_t timer = micros();
 
     // check loop time
@@ -1016,7 +969,8 @@ static void fast_loop()
 
 static void run_my_code()
 {
-	gcs_send_text_P(SEVERITY_HIGH, PSTR("|hello world|"));
+	//gcs_send_text_P(SEVERITY_HIGH, PSTR("|hello from gcs_send_text_P|"));
+    //hal.console->printf_P(PSTR("|hello from hal.console|"));
 }
 
 
