@@ -145,7 +145,7 @@ public:
 
     //
     // Z Axis methods
-    //// Constructor
+    //
 
     /**
      * altitude_ok - returns true if inertial based altitude and position can be trusted
