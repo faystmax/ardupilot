@@ -11,9 +11,9 @@ static void init_barometer(bool full_calibration)
 {
     gcs_send_text_P(SEVERITY_LOW, PSTR("Calibrating barometer"));
     if (full_calibration) {
-        barometer.calibrate();
+        telem.getBaro().calibrate();
     }else{
-        barometer.update_calibration();
+        telem.getBaro().update_calibration();
     }
     gcs_send_text_P(SEVERITY_LOW, PSTR("barometer calibration complete"));
 }
@@ -21,12 +21,12 @@ static void init_barometer(bool full_calibration)
 // return barometric altitude in centimeters
 static void read_barometer(void)
 {
-    barometer.read();
+    telem.getBaro().read();
     if (should_log(MASK_LOG_IMU)) {
         Log_Write_Baro();
     }
-    baro_alt = barometer.get_altitude() * 100.0f;
-    baro_climbrate = barometer.get_climb_rate() * 100.0f;
+    baro_alt = telem.getBaro().get_altitude() * 100.0f;
+    baro_climbrate = telem.getBaro().get_climb_rate() * 100.0f;
 
     // run glitch protection and update AP_Notify if home has been initialised
     baro_glitch.check_alt();

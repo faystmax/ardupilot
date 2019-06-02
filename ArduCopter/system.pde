@@ -148,7 +148,7 @@ static void init_ardupilot()
     
     rssi_analog_source      = hal.analogin->channel(g.rssi_pin);
 
-    barometer.init();
+    telem.getBaro().init();
 
     // init the GCS
     gcs[0].init(hal.uartA);
@@ -248,7 +248,7 @@ static void init_ardupilot()
 #endif // CLI_ENABLED
 
 #if HIL_MODE != HIL_MODE_DISABLED
-    while (barometer.get_last_update() == 0) {
+    while (telem.getBaro().get_last_update() == 0) {
         // the barometer begins updating when we get the first
         // HIL_STATE message
         gcs_send_text_P(SEVERITY_LOW, PSTR("Waiting for first HIL_STATE message"));

@@ -187,7 +187,7 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
                                                          MAV_SYS_STATUS_SENSOR_3D_MAG |
                                                          MAV_SYS_STATUS_SENSOR_GPS |
                                                          MAV_SYS_STATUS_SENSOR_RC_RECEIVER);
-    if (barometer.healthy()) {
+    if (telem.getBaro().healthy()) {
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE;
     }
     if (g.compass_enabled && compass.healthy(0) && telem.getAhrs().use_compass()) {
@@ -549,12 +549,12 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
 
     case MSG_RAW_IMU2:
         CHECK_PAYLOAD_SIZE(SCALED_PRESSURE);
-        gcs[chan-MAVLINK_COMM_0].send_scaled_pressure(barometer);
+        gcs[chan-MAVLINK_COMM_0].send_scaled_pressure(telem.getBaro());
         break;
 
     case MSG_RAW_IMU3:
         CHECK_PAYLOAD_SIZE(SENSOR_OFFSETS);
-        gcs[chan-MAVLINK_COMM_0].send_sensor_offsets(ins, compass, barometer);
+        gcs[chan-MAVLINK_COMM_0].send_sensor_offsets(ins, compass, telem.getBaro());
         break;
 
     case MSG_CURRENT_WAYPOINT:
@@ -1293,7 +1293,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 
         ins.set_accel(0, accels);
 
-        barometer.setHIL(packet.alt*0.001f);
+        telem.getBaro().setHIL(packet.alt*0.001f);
         compass.setHIL(packet.roll, packet.pitch, packet.yaw);
 
         break;

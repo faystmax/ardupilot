@@ -878,7 +878,7 @@ static void compass_accumulate(void)
  */
 static void barometer_accumulate(void)
 {
-    barometer.accumulate();
+    telem.getBaro().accumulate();
 }
 
 static void perf_update(void)

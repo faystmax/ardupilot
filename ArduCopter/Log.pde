@@ -656,7 +656,7 @@ static void Log_Write_Error(uint8_t sub_system, uint8_t error_code)
 
 static void Log_Write_Baro(void)
 {
-    DataFlash.Log_Write_Baro(barometer);
+    DataFlash.Log_Write_Baro(telem.getBaro());
 }
 
 static const struct LogStructure log_structure[] PROGMEM = {
