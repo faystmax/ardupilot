@@ -869,7 +869,7 @@ void setup()
 static void compass_accumulate(void)
 {
     if (g.compass_enabled) {
-        compass.accumulate();
+        telem.getCompass().accumulate();
     }
 }
 
@@ -1035,8 +1035,8 @@ static void update_batt_compass(void)
 
     if(g.compass_enabled) {
         // update compass with throttle value - used for compassmot
-        compass.set_throttle((float)g.rc_3.servo_out/1000.0f);
-        compass.read();
+        telem.getCompass().set_throttle((float)g.rc_3.servo_out/1000.0f);
+        telem.getCompass().read();
         // log compass information
         if (should_log(MASK_LOG_COMPASS)) {
             Log_Write_Compass();
@@ -1511,7 +1511,7 @@ static void tuning(){
 
     case CH6_DECLINATION:
         // set declination to +-20degrees
-        compass.set_declination(ToRad((2.0f * g.rc_6.control_in - g.radio_tuning_high)/100.0f), false);     // 2nd parameter is false because we do not want to save to eeprom because this would have a performance impact
+        telem.getCompass().set_declination(ToRad((2.0f * g.rc_6.control_in - g.radio_tuning_high)/100.0f), false);     // 2nd parameter is false because we do not want to save to eeprom because this would have a performance impact
         break;
 
     case CH6_CIRCLE_RATE:

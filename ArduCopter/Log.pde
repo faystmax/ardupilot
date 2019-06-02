@@ -359,9 +359,9 @@ struct PACKED log_Compass {
 // Write a Compass packet
 static void Log_Write_Compass()
 {
-    const Vector3f &mag_offsets = compass.get_offsets(0);
-    const Vector3f &mag_motor_offsets = compass.get_motor_offsets(0);
-    const Vector3f &mag = compass.get_field(0);
+    const Vector3f &mag_offsets = telem.getCompass().get_offsets(0);
+    const Vector3f &mag_motor_offsets = telem.getCompass().get_motor_offsets(0);
+    const Vector3f &mag = telem.getCompass().get_field(0);
     struct log_Compass pkt = {
         LOG_PACKET_HEADER_INIT(LOG_COMPASS_MSG),
         time_ms         : hal.scheduler->millis(),
@@ -377,10 +377,10 @@ static void Log_Write_Compass()
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 #if COMPASS_MAX_INSTANCES > 1
-    if (compass.get_count() > 1) {
-        const Vector3f &mag2_offsets = compass.get_offsets(1);
-        const Vector3f &mag2_motor_offsets = compass.get_motor_offsets(1);
-        const Vector3f &mag2 = compass.get_field(1);
+    if (telem.getCompass().get_count() > 1) {
+        const Vector3f &mag2_offsets = telem.getCompass().get_offsets(1);
+        const Vector3f &mag2_motor_offsets = telem.getCompass().get_motor_offsets(1);
+        const Vector3f &mag2 = telem.getCompass().get_field(1);
         struct log_Compass pkt2 = {
             LOG_PACKET_HEADER_INIT(LOG_COMPASS2_MSG),
             time_ms         : hal.scheduler->millis(),
@@ -398,10 +398,10 @@ static void Log_Write_Compass()
     }
 #endif
 #if COMPASS_MAX_INSTANCES > 2
-    if (compass.get_count() > 2) {
-        const Vector3f &mag3_offsets = compass.get_offsets(2);
-        const Vector3f &mag3_motor_offsets = compass.get_motor_offsets(2);
-        const Vector3f &mag3 = compass.get_field(2);
+    if (telem.getCompass().get_count() > 2) {
+        const Vector3f &mag3_offsets = telem.getCompass().get_offsets(2);
+        const Vector3f &mag3_motor_offsets = telem.getCompass().get_motor_offsets(2);
+        const Vector3f &mag3 = telem.getCompass().get_field(2);
         struct log_Compass pkt3 = {
             LOG_PACKET_HEADER_INIT(LOG_COMPASS3_MSG),
             time_ms         : hal.scheduler->millis(),

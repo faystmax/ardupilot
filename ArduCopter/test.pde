@@ -88,14 +88,14 @@ test_compass(uint8_t argc, const Menu::arg *argv)
         return (0);
     }
 
-    if (!compass.init()) {
+    if (!telem.getCompass().init()) {
         cliSerial->println_P(PSTR("Compass initialisation failed!"));
         return 0;
     }
 
     telem.getAhrs().init();
     telem.getAhrs().set_fly_forward(true);
-    telem.getAhrs().set_compass(&compass);
+    telem.getAhrs().set_compass(&telem.getCompass());
     report_compass();
 
     // we need the AHRS initialised for this test
@@ -120,20 +120,20 @@ test_compass(uint8_t argc, const Menu::arg *argv)
 
             medium_loopCounter++;
             if(medium_loopCounter == 5) {
-                if (compass.read()) {
+                if (telem.getCompass().read()) {
                     // Calculate heading
                     const Matrix3f &m = telem.getAhrs().get_dcm_matrix();
-                    heading = compass.calculate_heading(m);
-                    compass.learn_offsets();
+                    heading = telem.getCompass().calculate_heading(m);
+                    telem.getCompass().learn_offsets();
                 }
                 medium_loopCounter = 0;
             }
 
             counter++;
             if (counter>20) {
-                if (compass.healthy()) {
-                    const Vector3f &mag_ofs = compass.get_offsets();
-                    const Vector3f &mag = compass.get_field();
+                if (telem.getCompass().healthy()) {
+                    const Vector3f &mag_ofs = telem.getCompass().get_offsets();
+                    const Vector3f &mag = telem.getCompass().get_field();
                     cliSerial->printf_P(PSTR("Heading: %ld, XYZ: %.0f, %.0f, %.0f,\tXYZoff: %6.2f, %6.2f, %6.2f\n"),
                                         (wrap_360_cd(ToDeg(heading) * 100)) /100,
                                         mag.x,
@@ -156,7 +156,7 @@ test_compass(uint8_t argc, const Menu::arg *argv)
     // save offsets. This allows you to get sane offset values using
     // the CLI before you go flying.
     cliSerial->println_P(PSTR("saving offsets"));
-    compass.save_offsets();
+    telem.getCompass().save_offsets();
     return (0);
 }
 
