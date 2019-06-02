@@ -215,7 +215,7 @@ static void init_ardupilot()
  #endif // CONFIG_ADC
 
     // Do GPS init
-    gps.init(&DataFlash);
+    telem.getGps().init(&DataFlash);
 
     if(g.compass_enabled)
         init_compass();
@@ -336,7 +336,7 @@ static void startup_ground(bool force_gyro_cal)
 // returns true if the GPS is ok and home position is set
 static bool GPS_ok()
 {
-    if (ap.home_is_set && gps.status() >= AP_GPS::GPS_OK_FIX_3D && 
+    if (ap.home_is_set && telem.getGps().status() >= AP_GPS::GPS_OK_FIX_3D &&
         !gps_glitch.glitching() && !failsafe.gps &&
         !ekf_check_state.bad_compass && !failsafe.ekf) {
         return true;

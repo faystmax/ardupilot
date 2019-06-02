@@ -149,7 +149,7 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
     if (g.compass_enabled) {
         control_sensors_present |= MAV_SYS_STATUS_SENSOR_3D_MAG; // compass present
     }
-    if (gps.status() > AP_GPS::NO_GPS) {
+    if (telem.getGps().status() > AP_GPS::NO_GPS) {
         control_sensors_present |= MAV_SYS_STATUS_SENSOR_GPS;
     }
 #if OPTFLOW == ENABLED
@@ -193,7 +193,7 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
     if (g.compass_enabled && compass.healthy(0) && telem.getAhrs().use_compass()) {
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_3D_MAG;
     }
-    if (gps.status() > AP_GPS::NO_GPS && (!gps_glitch.glitching()||ap.usb_connected)) {
+    if (telem.getGps().status() > AP_GPS::NO_GPS && (!gps_glitch.glitching()||ap.usb_connected)) {
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_GPS;
     }
     if (ap.rc_receiver_present && !failsafe.radio) {
@@ -259,18 +259,18 @@ static void NOINLINE send_location(mavlink_channel_t chan)
     // positions.
     // If we don't have a GPS fix then we are dead reckoning, and will
     // use the current boot time as the fix time.    
-    if (gps.status() >= AP_GPS::GPS_OK_FIX_2D) {
-        fix_time = gps.last_fix_time_ms();
+    if (telem.getGps().status() >= AP_GPS::GPS_OK_FIX_2D) {
+        fix_time = telem.getGps().last_fix_time_ms();
     } else {
         fix_time = millis();
     }
-    const Vector3f &vel = gps.velocity();
+    const Vector3f &vel = telem.getGps().velocity();
     mavlink_msg_global_position_int_send(
         chan,
         fix_time,
         current_loc.lat,                // in 1E7 degrees
         current_loc.lng,                // in 1E7 degrees
-        gps.location().alt * 10UL,      // millimeters above sea level
+        telem.getGps().location().alt * 10UL,      // millimeters above sea level
         current_loc.alt * 10,           // millimeters above ground
         vel.x * 100,  // X speed cm/s (+ve North)
         vel.y * 100,  // Y speed cm/s (+ve East)
@@ -402,8 +402,8 @@ static void NOINLINE send_vfr_hud(mavlink_channel_t chan)
 {
     mavlink_msg_vfr_hud_send(
         chan,
-        gps.ground_speed(),
-        gps.ground_speed(),
+        telem.getGps().ground_speed(),
+        telem.getGps().ground_speed(),
         (telem.getAhrs().yaw_sensor / 100) % 360,
         g.rc_3.servo_out/10,
         current_loc.alt / 100.0f,
@@ -513,11 +513,11 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
         break;
 
     case MSG_GPS_RAW:
-        return gcs[chan-MAVLINK_COMM_0].send_gps_raw(gps);
+        return gcs[chan-MAVLINK_COMM_0].send_gps_raw(telem.getGps());
 
     case MSG_SYSTEM_TIME:
         CHECK_PAYLOAD_SIZE(SYSTEM_TIME);
-        gcs[chan-MAVLINK_COMM_0].send_system_time(gps);
+        gcs[chan-MAVLINK_COMM_0].send_system_time(telem.getGps());
         break;
 
     case MSG_SERVO_OUT:
@@ -1268,7 +1268,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         Vector3f vel(packet.vx, packet.vy, packet.vz);
         vel *= 0.01f;
 
-        gps.setHIL(0, AP_GPS::GPS_OK_FIX_3D,
+        telem.getGps().setHIL(0, AP_GPS::GPS_OK_FIX_3D,
                    packet.time_usec/1000,
                    loc, vel, 10, 0, true);
 

@@ -1196,16 +1196,16 @@ static void update_GPS(void)
     bool report_gps_glitch;
     bool gps_updated = false;
 
-    gps.update();
+    telem.getGps().update();
 
     // logging and glitch protection run after every gps message
-    for (uint8_t i=0; i<gps.num_sensors(); i++) {
-        if (gps.last_message_time_ms(i) != last_gps_reading[i]) {
-            last_gps_reading[i] = gps.last_message_time_ms(i);
+    for (uint8_t i=0; i<telem.getGps().num_sensors(); i++) {
+        if (telem.getGps().last_message_time_ms(i) != last_gps_reading[i]) {
+            last_gps_reading[i] = telem.getGps().last_message_time_ms(i);
 
             // log GPS message
             if (should_log(MASK_LOG_GPS)) {
-                DataFlash.Log_Write_GPS(gps, i, current_loc.alt);
+                DataFlash.Log_Write_GPS(telem.getGps(), i, current_loc.alt);
             }
 
             gps_updated = true;
@@ -1228,12 +1228,12 @@ static void update_GPS(void)
         }
 
         // checks to initialise home and take location based pictures
-        if (gps.status() >= AP_GPS::GPS_OK_FIX_3D) {
+        if (telem.getGps().status() >= AP_GPS::GPS_OK_FIX_3D) {
 
             // check if we can initialise home yet
             if (!ap.home_is_set) {
                 // if we have a 3d lock and valid location
-                if(gps.status() >= AP_GPS::GPS_OK_FIX_3D && gps.location().lat != 0) {
+                if(telem.getGps().status() >= AP_GPS::GPS_OK_FIX_3D && telem.getGps().location().lat != 0) {
                     if (ground_start_count > 0 ) {
                         ground_start_count--;
                     } else {
@@ -1243,11 +1243,11 @@ static void update_GPS(void)
                         init_home();
 
                         // set system clock for log timestamps
-                        hal.util->set_system_clock(gps.time_epoch_usec());
+                        hal.util->set_system_clock(telem.getGps().time_epoch_usec());
                         
                         if (g.compass_enabled) {
                             // Set compass declination automatically
-                            compass.set_initial_location(gps.location().lat, gps.location().lng);
+                            compass.set_initial_location(telem.getGps().location().lat, telem.getGps().location().lng);
                         }
                     }
                 } else {
@@ -1259,9 +1259,9 @@ static void update_GPS(void)
             //If we are not currently armed, and we're ready to 
             //enter RTK mode, then capture current state as home,
             //and enter RTK fixes!
-            if (!motors.armed() && gps.can_calculate_base_pos()) {
+            if (!motors.armed() && telem.getGps().can_calculate_base_pos()) {
 
-                gps.calculate_base_pos();
+                telem.getGps().calculate_base_pos();
 
             }
 

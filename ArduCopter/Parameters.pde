@@ -1028,7 +1028,7 @@ const AP_Param::Info var_info[] PROGMEM = {
     // GPS driver
     // @Group: GPS_
     // @Path: ../libraries/AP_GPS/AP_GPS.cpp
-    GOBJECT(gps, "GPS_", AP_GPS),
+    GOBJECT(telem.getGps(), "GPS_", AP_GPS),
 
     // @Group: SCHED_
     // @Path: ../libraries/AP_Scheduler/AP_Scheduler.cpp

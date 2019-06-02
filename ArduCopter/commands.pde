@@ -7,7 +7,7 @@ static void init_home()
     set_home_is_set(true);
 
     // copter uses 0 home altitude
-    Location loc = gps.location();
+    Location loc = telem.getGps().location();
 
     telem.getAhrs().set_home(loc);
 
