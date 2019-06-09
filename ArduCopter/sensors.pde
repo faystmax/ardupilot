@@ -138,10 +138,28 @@ void read_receiver_rssi(void)
 //addition by S.S. to invoke SPI transfer
 
 //demo function to calc checksum - note start from 4th byte of data
-static uint32_t calcSumCRC(void *data, int len) {
-    uint32_t sum = 0;
-    for (int i = 4; i < len; i++) sum += ((uint8_t *)data)[i]; //-4 byte for crc
-    return sum;
+//static uint32_t calcSumCRC(void *data, int len) {
+//    uint32_t sum = 0;
+//    for (int i = 4; i < len; i++) sum += ((uint8_t *)data)[i]; //-4 byte for crc
+//    return sum;
+//}
+
+static uint8_t calcSumCRC(void *data, int len) {
+    int i, j;
+    uint8_t byte, crc, mask;
+
+    i = 0;
+    crc = 0xFFFFFFFF;
+    for (int i = 0; i < len - 4; i++) { // -4 byte for crc
+        byte = ((uint8_t *) data)[i];
+        crc = crc ^ byte;
+        for (j = 7; j >= 0; j--) {      // Do eight times.
+            mask = -(crc & 1);
+            crc = (crc >> 1) ^ (0xEDB88320 & mask);
+        }
+        i = i + 1;
+    }
+    return ~crc;
 }
 
 
@@ -159,20 +177,20 @@ static void ReadPOK_Update(void)
 
     uint16_t max_size;
     struct to_send {
-        uint32_t crc; //crc should be first in the struct
         uint32_t len;
         uint32_t velocity;
         uint8_t buf[10];
+        uint8_t crc;
     };
 
     struct to_receive {
-        uint32_t crc;
         uint32_t code1;
         uint32_t code2;
         uint32_t code3;
         uint32_t code4;
         uint32_t code5;
         uint32_t code6;
+        uint8_t crc;
     };
 
     union send_and_receive {
@@ -217,12 +235,10 @@ static void ReadPOK_Update(void)
     sendme.send.buf[2] = 'l';
     sendme.send.buf[3] = 'l';
     sendme.send.buf[4] = '0';
-    sendme.send.buf[5] = '\n';
-    sendme.send.buf[6] = 0;
+    sendme.send.buf[5] = 0;
     sendme.send.len = 6;
     sendme.send.velocity = velo;
     sendme.send.crc = calcSumCRC(&sendme.send, sizeof (struct to_send));
-    velo++;
 
     max_size = sizeof(union send_and_receive);
 
