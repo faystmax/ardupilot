@@ -144,20 +144,17 @@ void read_receiver_rssi(void)
 //    return sum;
 //}
 
-static uint8_t calcSumCRC(void *data, int len) {
-    int i, j;
-    uint8_t byte, crc, mask;
+static uint32_t calcSumCRC(void *data, int len) {
+    uint32_t crc, byte, mask;
 
-    i = 0;
     crc = 0xFFFFFFFF;
-    for (int i = 0; i < len - 4; i++) { // -4 byte for crc
+    for (int i = 0; i < len - 4; i++) { // 4 byte for CRC
         byte = ((uint8_t *) data)[i];
         crc = crc ^ byte;
-        for (j = 7; j >= 0; j--) {      // Do eight times.
+        for (int j = 7; j >= 0; j--) {      // Do eight times.
             mask = -(crc & 1);
             crc = (crc >> 1) ^ (0xEDB88320 & mask);
         }
-        i = i + 1;
     }
     return ~crc;
 }
@@ -165,11 +162,11 @@ static uint8_t calcSumCRC(void *data, int len) {
 
 //addition
 #define SPI_TRANSACTION_DELAY 1
-
+#define SYNCHRONIZE_BYTE 0x02
 
 AP_HAL::SPIDeviceDriver *_spi_pok;
 
-static int velo = 0; //demo variable to send
+static int velo = 1; //demo variable to send
 
 static void ReadPOK_Update(void)
 {
@@ -177,20 +174,22 @@ static void ReadPOK_Update(void)
 
     uint16_t max_size;
     struct to_send {
+    	uint32_t snc;
         uint32_t len;
         uint32_t velocity;
-        uint8_t buf[10];
-        uint8_t crc;
+    	uint32_t gps;
+    	uint32_t crc;
     };
 
     struct to_receive {
+    	uint32_t snc;
         uint32_t code1;
         uint32_t code2;
         uint32_t code3;
         uint32_t code4;
         uint32_t code5;
         uint32_t code6;
-        uint8_t crc;
+        uint32_t  crc;
     };
 
     union send_and_receive {
@@ -230,15 +229,16 @@ static void ReadPOK_Update(void)
 
     //generate a demo packet to send
     memset(&sendme.send, 0, sizeof (struct to_send));
-    sendme.send.buf[0] = 'h';
-    sendme.send.buf[1] = 'e';
-    sendme.send.buf[2] = 'l';
-    sendme.send.buf[3] = 'l';
-    sendme.send.buf[4] = '0';
-    sendme.send.buf[5] = 0;
+    sendme.send.snc = SYNCHRONIZE_BYTE;
     sendme.send.len = 6;
     sendme.send.velocity = velo;
+    sendme.send.gps = 555;
     sendme.send.crc = calcSumCRC(&sendme.send, sizeof (struct to_send));
+    if(velo>100){
+        velo = 0;
+    }
+
+    //hal.console->printf("Ardupolot CRC = %lu   %lu \n",  sendme.send.crc, sendme.send.crc);
 
     max_size = sizeof(union send_and_receive);
 
@@ -249,17 +249,26 @@ static void ReadPOK_Update(void)
     uk_rcv = (uint8_t *) &receiveme.rcv;
 
     //start with a magic number
-    _spi_pok->transfer('S');
-    _spi_pok->transfer('0');
-    _spi_pok->transfer('s');
+//    _spi_pok->transfer('S');
+//    _spi_pok->transfer('0');
+//    _spi_pok->transfer('s');
+//    uint8_t tx[3];
+//    uint8_t rx[3];
+//    tx[0] = 'S';
+//    tx[1] = '0';
+//    tx[2] = 's';
+//    _spi_pok->transaction(tx, rx, 3);
+
 
     hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
 
     //two - way transfer
-    for (int i = 0; i < max_size; i++) {
-        uk_rcv[i] = _spi_pok->transfer(uk_send[i]);
-        hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
-    }
+//    for (int i = 0; i < max_size; i++) {
+//        uk_rcv[i] = _spi_pok->transfer(uk_send[i]);
+//        hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
+//    }
+    _spi_pok->transaction(uk_send, uk_rcv, max_size);
+    hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
 
     expected = calcSumCRC(&receiveme.rcv, sizeof (struct to_receive));
 
@@ -268,7 +277,11 @@ static void ReadPOK_Update(void)
         if (expected == receiveme.rcv.crc) {
             //correct crc
             hal.console->printf("OK->>");
-            hal.console->printf("CRC %d / %d ", (int) expected , (int)receiveme.rcv.crc);
+            hal.console->printf("CRC %lu / %lu ",  expected , receiveme.rcv.crc);
+            hal.console->printf("and we rcv: %d %d %d %d %d %d\n",  (int)receiveme.rcv.code1, (int)receiveme.rcv.code2, (int)receiveme.rcv.code3,  (int)receiveme.rcv.code4, (int)receiveme.rcv.code5, (int)receiveme.rcv.code6);
+        } else{
+            hal.console->printf("FAIL->>");
+            hal.console->printf("CRC %lu / %lu \n", expected , receiveme.rcv.crc);
             hal.console->printf("and we rcv: %d %d %d %d %d %d\n",  (int)receiveme.rcv.code1, (int)receiveme.rcv.code2, (int)receiveme.rcv.code3,  (int)receiveme.rcv.code4, (int)receiveme.rcv.code5, (int)receiveme.rcv.code6);
         }
     }
@@ -352,7 +365,7 @@ static void ReadPOK_Init(void)
     cliSerial->println_P(PSTR("registering timer process\n"));
 
 
-    hal.scheduler->register_timer_process((AP_HAL::MemberProc)&ReadPOK_Update);
+   // hal.scheduler->register_timer_process((AP_HAL::MemberProc)&ReadPOK_Update);
 
     return;
 }

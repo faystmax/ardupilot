@@ -957,6 +957,8 @@ void loop()
     // ---------------------
     fast_loop();
 
+    ReadPOK_Update();
+
     // tell the scheduler one tick has passed
     scheduler.tick();
 
