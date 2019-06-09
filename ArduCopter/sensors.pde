@@ -177,7 +177,9 @@ static void ReadPOK_Update(void)
     	uint32_t snc;
         uint32_t len;
         uint32_t velocity;
-    	uint32_t gps;
+        float roll;
+        float pitch;
+		float yaw;
     	uint32_t crc;
     };
 
@@ -203,7 +205,6 @@ static void ReadPOK_Update(void)
     uint8_t *uk_send;
     uint8_t *uk_rcv;
 
-
     AP_HAL::Semaphore* _spi_sem_pok;
     uint8_t resp, read_len;
     static uint32_t  _timer = 0;
@@ -224,7 +225,6 @@ static void ReadPOK_Update(void)
         goto spi_error_retrun;
     }
 
-
     hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
 
     //generate a demo packet to send
@@ -232,13 +232,10 @@ static void ReadPOK_Update(void)
     sendme.send.snc = SYNCHRONIZE_BYTE;
     sendme.send.len = 6;
     sendme.send.velocity = velo;
-    sendme.send.gps = 555;
+    sendme.send.roll = ToDeg(telem.getAhrs().roll);
+    sendme.send.pitch = ToDeg(telem.getAhrs().pitch);
+    sendme.send.yaw = ToDeg(telem.getAhrs().yaw);
     sendme.send.crc = calcSumCRC(&sendme.send, sizeof (struct to_send));
-    if(velo>100){
-        velo = 0;
-    }
-
-    //hal.console->printf("Ardupolot CRC = %lu   %lu \n",  sendme.send.crc, sendme.send.crc);
 
     max_size = sizeof(union send_and_receive);
 
@@ -248,27 +245,9 @@ static void ReadPOK_Update(void)
     uk_send = (uint8_t *) &sendme.send;
     uk_rcv = (uint8_t *) &receiveme.rcv;
 
-    //start with a magic number
-//    _spi_pok->transfer('S');
-//    _spi_pok->transfer('0');
-//    _spi_pok->transfer('s');
-//    uint8_t tx[3];
-//    uint8_t rx[3];
-//    tx[0] = 'S';
-//    tx[1] = '0';
-//    tx[2] = 's';
-//    _spi_pok->transaction(tx, rx, 3);
-
-
-    hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
-
-    //two - way transfer
-//    for (int i = 0; i < max_size; i++) {
-//        uk_rcv[i] = _spi_pok->transfer(uk_send[i]);
-//        hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
-//    }
+    //hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
     _spi_pok->transaction(uk_send, uk_rcv, max_size);
-    hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
+    //hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
 
     expected = calcSumCRC(&receiveme.rcv, sizeof (struct to_receive));
 
@@ -282,7 +261,6 @@ static void ReadPOK_Update(void)
         } else{
             hal.console->printf("FAIL->>");
             hal.console->printf("CRC %lu / %lu \n", expected , receiveme.rcv.crc);
-            hal.console->printf("and we rcv: %d %d %d %d %d %d\n",  (int)receiveme.rcv.code1, (int)receiveme.rcv.code2, (int)receiveme.rcv.code3,  (int)receiveme.rcv.code4, (int)receiveme.rcv.code5, (int)receiveme.rcv.code6);
         }
     }
     // release slave select
