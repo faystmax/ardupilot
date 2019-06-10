@@ -144,7 +144,7 @@ void read_receiver_rssi(void)
 //    return sum;
 //}
 
-static uint32_t calcSumCRC(void *data, int len) {
+static uint32_t calcCRC(void *data, int len) {
     uint32_t crc, byte, mask;
 
     crc = 0xFFFFFFFF;
@@ -161,50 +161,47 @@ static uint32_t calcSumCRC(void *data, int len) {
 
 
 //addition
-#define SPI_TRANSACTION_DELAY 1
 #define SYNCHRONIZE_BYTE 0x02
-
 AP_HAL::SPIDeviceDriver *_spi_pok;
 
-static int velo = 1; //demo variable to send
+typedef enum  {
+  TRANSFER_OK,
+  TRANSFER_ERROR
+} TRANSFER_Status;
+
+/// Exchange Structures
+struct send_pack {
+	uint32_t snc;
+    uint32_t len;
+    uint32_t velocity;
+    float roll;
+    float pitch;
+	float yaw;
+	uint32_t crc;
+};
+
+struct recive_pack {
+	uint32_t snc;
+    uint32_t code1;
+    uint32_t code2;
+    uint32_t code3;
+    uint32_t code4;
+    uint32_t code5;
+    uint32_t code6;
+    uint32_t  crc;
+};
+
+union message {
+	struct send_pack send;
+	struct recive_pack rcv;
+};
+
+const uint16_t message_size = sizeof(union message);
+const uint16_t send_pack_size = sizeof(struct send_pack);
+const uint16_t recive_pack_size = sizeof(struct recive_pack);
 
 static void ReadPOK_Update(void)
 {
-    uint32_t expected = 0;
-
-    uint16_t max_size;
-    struct to_send {
-    	uint32_t snc;
-        uint32_t len;
-        uint32_t velocity;
-        float roll;
-        float pitch;
-		float yaw;
-    	uint32_t crc;
-    };
-
-    struct to_receive {
-    	uint32_t snc;
-        uint32_t code1;
-        uint32_t code2;
-        uint32_t code3;
-        uint32_t code4;
-        uint32_t code5;
-        uint32_t code6;
-        uint32_t  crc;
-    };
-
-    union send_and_receive {
-        struct to_send send;
-        struct to_receive rcv;
-    };
-
-    union send_and_receive sendme;
-    union send_and_receive receiveme;
-
-    uint8_t *uk_send;
-    uint8_t *uk_rcv;
-
     AP_HAL::Semaphore* _spi_sem_pok;
     uint8_t resp, read_len;
     static uint32_t  _timer = 0;
@@ -214,136 +211,58 @@ static void ReadPOK_Update(void)
     if (tnow - _timer < 10000) {
         return;
     }
-
     _timer = tnow;
+
     // get spi bus semaphore
     _spi_sem_pok = _spi_pok->get_semaphore();
     if (_spi_sem_pok == NULL || !_spi_sem_pok->take_nonblocking())
     {
-        //cliSerial->println_P(PSTR("ReadPOK() failed - sem error "));
-        //periodically we will get an error, maybe normal
-        goto spi_error_retrun;
+    	hal.console->printf("ReadPOK() failed - sem error ");
+        return;
     }
 
-    hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
+    uint32_t expected = 0;
+	union message send;
+	union message rcv;
 
-    //generate a demo packet to send
-    memset(&sendme.send, 0, sizeof (struct to_send));
-    sendme.send.snc = SYNCHRONIZE_BYTE;
-    sendme.send.len = 6;
-    sendme.send.velocity = velo;
-    sendme.send.roll = ToDeg(telem.getAhrs().roll);
-    sendme.send.pitch = ToDeg(telem.getAhrs().pitch);
-    sendme.send.yaw = ToDeg(telem.getAhrs().yaw);
-    sendme.send.crc = calcSumCRC(&sendme.send, sizeof (struct to_send));
+	/// Preparing data to send
+    memset(&send.send, 0, send_pack_size);
+    send.send.snc = SYNCHRONIZE_BYTE;
+    send.send.len = 6;
+    send.send.velocity = 1010;
+    send.send.roll = ToDeg(telem.getAhrs().roll);
+    send.send.pitch = ToDeg(telem.getAhrs().pitch);
+    send.send.yaw = ToDeg(telem.getAhrs().yaw);
+    send.send.crc = calcCRC(&send.send, send_pack_size);
 
-    max_size = sizeof(union send_and_receive);
-
+    /// Send to POK
     _spi_pok->cs_assert();
+    _spi_pok->transaction((uint8_t *) &send.send, (uint8_t *) &rcv.rcv, message_size);
 
-    //pointers to send and receive structs
-    uk_send = (uint8_t *) &sendme.send;
-    uk_rcv = (uint8_t *) &receiveme.rcv;
+	expected = calcCRC(&rcv.rcv, recive_pack_size);
+	if (expected == rcv.rcv.crc) {
+		hal.console->printf("CRC OK and we rcv: %lu %lu %lu %lu %lu %lu\n",
+				rcv.rcv.code1, rcv.rcv.code2, rcv.rcv.code3,
+				rcv.rcv.code4, rcv.rcv.code5, rcv.rcv.code6);
+	} else {
+		hal.console->printf("CRC not valid %lu / %lu \n", expected, rcv.rcv.crc);
+	}
 
-    //hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
-    _spi_pok->transaction(uk_send, uk_rcv, max_size);
-    //hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
-
-    expected = calcSumCRC(&receiveme.rcv, sizeof (struct to_receive));
-
-    if (receiveme.rcv.crc != 0) {
-        //have data, otherwise the other way is sleeping
-        if (expected == receiveme.rcv.crc) {
-            //correct crc
-            hal.console->printf("OK->>");
-            hal.console->printf("CRC %lu / %lu ",  expected , receiveme.rcv.crc);
-            hal.console->printf("and we rcv: %d %d %d %d %d %d\n",  (int)receiveme.rcv.code1, (int)receiveme.rcv.code2, (int)receiveme.rcv.code3,  (int)receiveme.rcv.code4, (int)receiveme.rcv.code5, (int)receiveme.rcv.code6);
-        } else{
-            hal.console->printf("FAIL->>");
-            hal.console->printf("CRC %lu / %lu \n", expected , receiveme.rcv.crc);
-        }
-    }
-    // release slave select
+    /// release
     _spi_pok->cs_release();
-
-
-    // release the spi bus
     _spi_sem_pok->give();
-
-
-
     return;
-
-    spi_error_retrun:
-    return;
-
-    spi_error_sem_and_cs_retrun:
-    // release slave select
-    _spi_pok->cs_release();
-
-    // release the spi bus
-    _spi_sem_pok->give();
-
-    //cliSerial->println_P(PSTR("ReadRPM() failed - spi Nak"));
 }
 
 static void ReadPOK_Init(void)
 {
-    AP_HAL::Semaphore* _spi_sem_rpm;
-    uint8_t resp, read_len;
-    int i;
-
     _spi_pok = hal.spi->device(AP_HAL::SPIDevice_POK);
     if (_spi_pok == NULL)
     {
-        cliSerial->println_P(PSTR("ReadPOKInit() failed - device error "));
+    	hal.console->printf("ReadPOKInit() failed - device error ");
         return;
     }
-
-    // now that we have initialised, we set the SPI bus speed to high
-    // (2MHz on APM2)
+    /// Set the SPI bus speed to high (2MHz on APM2)
     _spi_pok->set_bus_speed(AP_HAL::SPIDeviceDriver::SPI_SPEED_HIGH);
-
-
-    cliSerial->println_P(PSTR("Init variables update proc\n"));
-
-    /*
-      _spi_pok->cs_assert();
-
-      resp = _spi_pok->transfer(6);
-      if(resp != ACK)
-      {
-    	 cliSerial->println_P(PSTR("no ACK response!\n"));
-      }
-
- 	 cliSerial->println_P(PSTR("transfer data!\n"));
-
-      hal.scheduler->delay_microseconds(SPI_TRANSACTION_DELAY);
-      _spi_pok->transfer('H');
-      _spi_pok->transfer('e');
-      _spi_pok->transfer('l');
-      _spi_pok->transfer('l');
-      _spi_pok->transfer('o');
-      _spi_pok->transfer('\n');
-
-
-      // release slave select
-
-  	 cliSerial->println_P(PSTR("spi release"));
-
-      _spi_pok->cs_release();
-
-
-  	 cliSerial->println_P(PSTR("give sem!\n"));
-
-      // release the spi bus
-      _spi_sem_rpm->give();
-
-*/
-    cliSerial->println_P(PSTR("registering timer process\n"));
-
-
-   // hal.scheduler->register_timer_process((AP_HAL::MemberProc)&ReadPOK_Update);
-
     return;
 }
