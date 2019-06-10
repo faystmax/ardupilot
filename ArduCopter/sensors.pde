@@ -145,9 +145,7 @@ static void init_POK(void)
 	cliSerial->println_P(PSTR("POK Init successfuly"));
 }
 
-
 static void update_POK(void)
 {
 	pok.update(&telem);
-    return;
 }

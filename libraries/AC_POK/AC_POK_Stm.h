@@ -3,19 +3,18 @@
 #ifndef __AP_POK__STM_H__
 #define __AP_POK__STM_H__
 
-#include "AP_POK.h"
+#include "AC_POK.h"
 
-class AC_POK_Stm: public AP_POK {
+class AC_POK_Stm: public AC_POK {
 public:
 	/// initialize connection
 	bool init();
 
-	/// send data to POK and recive commands
-	TRANSFER_Status update(Telem *telem);
+	/// send data to POK and receive commands
+	void update(Telem *telem);
 
 private:
 	static uint32_t _timer;
-	uint32_t _last_update;
 
 	/// Calculate CRC
 	uint32_t calcCRC(void *data, int len);

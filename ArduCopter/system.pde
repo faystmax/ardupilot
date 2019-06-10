@@ -294,6 +294,9 @@ static void init_ardupilot()
         hal.uartD->set_blocking_writes(false);
     }
 
+    // Initialize POK after all telemetry initialization
+    init_POK();
+
     cliSerial->print_P(PSTR("\nReady to FLY "));
 
     // flag that initialisation has completed

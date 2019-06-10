@@ -106,6 +106,7 @@
 #include <DataFlash.h>          // ArduPilot Mega Flash Memory Library
 #include <AP_ADC.h>             // ArduPilot Mega Analog to Digital Converter Library
 #include <AP_ADC_AnalogSource.h>
+#include <AP_Baro.h>
 #include <AP_Baro_Glitch.h>     // Baro glitch protection library
 #include <AP_Compass.h>         // ArduPilot Mega Magnetometer Library
 #include <AP_Math.h>            // ArduPilot Mega Vector/Matrix math Library
@@ -217,9 +218,12 @@ static AP_BattMonitor battery;
 static AP_AHRS_DCM ahrs(ins, barometer, gps);
 static AP_InertialNav inertial_nav(ahrs, barometer, gps_glitch, baro_glitch);
 
-Telem telem(ins, gps, gps_glitch, barometer, baro_glitch, compass, battery, ahrs, inertial_nav);
+static Telem telem(ins, gps, gps_glitch, barometer, baro_glitch, compass, battery, ahrs, inertial_nav);
 
-static AP_POK_Stm pok;
+////////////////////////////////////////////////////////////////////////////////
+// Define Main POK object
+////////////////////////////////////////////////////////////////////////////////
+static AC_POK_Stm pok;
 
 ////////////////////////////////////////////////////////////////////////////////
 // cliSerial
@@ -900,8 +904,6 @@ void setup()
 
     init_ardupilot();
 
-    ReadPOK_Init();
-
     // initialise the main loop scheduler
     scheduler.init(&scheduler_tasks[0], sizeof(scheduler_tasks)/sizeof(scheduler_tasks[0]));
 }
@@ -958,7 +960,7 @@ void loop()
     // ---------------------
     fast_loop();
 
-    // send data and receive commands
+    // Send data and receive commands
     update_POK();
 
     // tell the scheduler one tick has passed
