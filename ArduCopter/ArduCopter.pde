@@ -106,7 +106,6 @@
 #include <DataFlash.h>          // ArduPilot Mega Flash Memory Library
 #include <AP_ADC.h>             // ArduPilot Mega Analog to Digital Converter Library
 #include <AP_ADC_AnalogSource.h>
-#include <AP_Baro.h>
 #include <AP_Baro_Glitch.h>     // Baro glitch protection library
 #include <AP_Compass.h>         // ArduPilot Mega Magnetometer Library
 #include <AP_Math.h>            // ArduPilot Mega Vector/Matrix math Library
@@ -147,6 +146,7 @@
 #include <AP_BoardConfig.h>     // board configuration library
 #include <AP_Frsky_Telem.h>
 
+#include <AC_POK.h>				// Lib for POK
 #include <AC_Telemetry.h>
 
 #if SPRAYER == ENABLED
@@ -219,6 +219,7 @@ static AP_InertialNav inertial_nav(ahrs, barometer, gps_glitch, baro_glitch);
 
 Telem telem(ins, gps, gps_glitch, barometer, baro_glitch, compass, battery, ahrs, inertial_nav);
 
+static AP_POK_Stm pok;
 
 ////////////////////////////////////////////////////////////////////////////////
 // cliSerial
@@ -957,7 +958,8 @@ void loop()
     // ---------------------
     fast_loop();
 
-    ReadPOK_Update();
+    // send data and receive commands
+    update_POK();
 
     // tell the scheduler one tick has passed
     scheduler.tick();
@@ -998,9 +1000,6 @@ static void fast_loop()
     // run the attitude controllers
     update_flight_mode();
 
-    run_my_code();
-
-
     // optical flow
     // --------------------
 #if OPTFLOW == ENABLED
@@ -1010,14 +1009,6 @@ static void fast_loop()
 #endif  // OPTFLOW == ENABLED
 
 }
-
-static void run_my_code()
-{
-	//gcs_send_text_P(SEVERITY_HIGH, PSTR("|hello from gcs_send_text_P|"));
-    //hal.console->printf_P(PSTR("|hello from hal.console|"));
-}
-
-
 
 // rc_loops - reads user input from transmitter/receiver
 // called at 100hz

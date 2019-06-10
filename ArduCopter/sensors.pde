@@ -134,135 +134,20 @@ void read_receiver_rssi(void)
     }
 }
 
+///
+/// Addition by S.S. to invoke SPI transfer
+///
 
-//addition by S.S. to invoke SPI transfer
-
-//demo function to calc checksum - note start from 4th byte of data
-//static uint32_t calcSumCRC(void *data, int len) {
-//    uint32_t sum = 0;
-//    for (int i = 4; i < len; i++) sum += ((uint8_t *)data)[i]; //-4 byte for crc
-//    return sum;
-//}
-
-static uint32_t calcCRC(void *data, int len) {
-    uint32_t crc, byte, mask;
-
-    crc = 0xFFFFFFFF;
-    for (int i = 0; i < len - 4; i++) { // 4 byte for CRC
-        byte = ((uint8_t *) data)[i];
-        crc = crc ^ byte;
-        for (int j = 7; j >= 0; j--) {      // Do eight times.
-            mask = -(crc & 1);
-            crc = (crc >> 1) ^ (0xEDB88320 & mask);
-        }
-    }
-    return ~crc;
+static void init_POK(void)
+{
+	cliSerial->println_P(PSTR("Init POK"));
+	pok.init();
+	cliSerial->println_P(PSTR("POK Init successfuly"));
 }
 
 
-//addition
-#define SYNCHRONIZE_BYTE 0x02
-AP_HAL::SPIDeviceDriver *_spi_pok;
-
-typedef enum  {
-  TRANSFER_OK,
-  TRANSFER_ERROR
-} TRANSFER_Status;
-
-/// Exchange Structures
-struct send_pack {
-	uint32_t snc;
-    uint32_t len;
-    uint32_t velocity;
-    float roll;
-    float pitch;
-	float yaw;
-	uint32_t crc;
-};
-
-struct recive_pack {
-	uint32_t snc;
-    uint32_t code1;
-    uint32_t code2;
-    uint32_t code3;
-    uint32_t code4;
-    uint32_t code5;
-    uint32_t code6;
-    uint32_t  crc;
-};
-
-union message {
-	struct send_pack send;
-	struct recive_pack rcv;
-};
-
-const uint16_t message_size = sizeof(union message);
-const uint16_t send_pack_size = sizeof(struct send_pack);
-const uint16_t recive_pack_size = sizeof(struct recive_pack);
-
-static void ReadPOK_Update(void)
+static void update_POK(void)
 {
-    AP_HAL::Semaphore* _spi_sem_pok;
-    uint8_t resp, read_len;
-    static uint32_t  _timer = 0;
-    uint32_t tnow = hal.scheduler->micros();
-
-    // read rate to 100hz maximum.
-    if (tnow - _timer < 10000) {
-        return;
-    }
-    _timer = tnow;
-
-    // get spi bus semaphore
-    _spi_sem_pok = _spi_pok->get_semaphore();
-    if (_spi_sem_pok == NULL || !_spi_sem_pok->take_nonblocking())
-    {
-    	hal.console->printf("ReadPOK() failed - sem error ");
-        return;
-    }
-
-    uint32_t expected = 0;
-	union message send;
-	union message rcv;
-
-	/// Preparing data to send
-    memset(&send.send, 0, send_pack_size);
-    send.send.snc = SYNCHRONIZE_BYTE;
-    send.send.len = 6;
-    send.send.velocity = 1010;
-    send.send.roll = ToDeg(telem.getAhrs().roll);
-    send.send.pitch = ToDeg(telem.getAhrs().pitch);
-    send.send.yaw = ToDeg(telem.getAhrs().yaw);
-    send.send.crc = calcCRC(&send.send, send_pack_size);
-
-    /// Send to POK
-    _spi_pok->cs_assert();
-    _spi_pok->transaction((uint8_t *) &send.send, (uint8_t *) &rcv.rcv, message_size);
-
-	expected = calcCRC(&rcv.rcv, recive_pack_size);
-	if (expected == rcv.rcv.crc) {
-		hal.console->printf("CRC OK and we rcv: %lu %lu %lu %lu %lu %lu\n",
-				rcv.rcv.code1, rcv.rcv.code2, rcv.rcv.code3,
-				rcv.rcv.code4, rcv.rcv.code5, rcv.rcv.code6);
-	} else {
-		hal.console->printf("CRC not valid %lu / %lu \n", expected, rcv.rcv.crc);
-	}
-
-    /// release
-    _spi_pok->cs_release();
-    _spi_sem_pok->give();
-    return;
-}
-
-static void ReadPOK_Init(void)
-{
-    _spi_pok = hal.spi->device(AP_HAL::SPIDevice_POK);
-    if (_spi_pok == NULL)
-    {
-    	hal.console->printf("ReadPOKInit() failed - device error ");
-        return;
-    }
-    /// Set the SPI bus speed to high (2MHz on APM2)
-    _spi_pok->set_bus_speed(AP_HAL::SPIDeviceDriver::SPI_SPEED_HIGH);
+	pok.update(&telem);
     return;
 }
