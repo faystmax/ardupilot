@@ -20,8 +20,8 @@ struct send_pack {
     float pitch;
 	float yaw;
 	float velociry_xy;   // current horizontal velocity in cm/s
-	uint32_t latitude;    // latitude of the current position estimation in 100 nano degrees (i.e. degree value multiplied by 10,000,000)
-	uint32_t longitude;   // longitude of the current position estimation in 100 nano degrees (i.e. degree value multiplied by 10,000,000)
+	uint32_t latitude;   // latitude of the current position estimation in 100 nano degrees (i.e. degree value multiplied by 10,000,000)
+	uint32_t longitude;  // longitude of the current position estimation in 100 nano degrees (i.e. degree value multiplied by 10,000,000)
 	float preassure;     // pressure in Pascal. Divide by 100 for millibars or hectopascals
 	float temperature;   // temperature in degrees C
 	float altitude;      // get current altitude in meters relative to altitude at the time of the last calibrate() in baro call
