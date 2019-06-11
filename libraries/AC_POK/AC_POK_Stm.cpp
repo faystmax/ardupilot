@@ -51,11 +51,17 @@ void AC_POK_Stm::update(Telem *telem) {
 	/// Preparing data to send
 	memset(&send.send, 0, send_pack_size);
 	send.send.snc = SYNCHRONIZE_BYTE;
-	send.send.len = 6;
-	send.send.velocity = 1010;
 	send.send.roll = ToDeg(telem->getAhrs().roll);
 	send.send.pitch = ToDeg(telem->getAhrs().pitch);
 	send.send.yaw = ToDeg(telem->getAhrs().yaw);
+	send.send.velociry_xy = telem->getInertialNav().get_velocity_xy();
+	send.send.latitude = telem->getInertialNav().get_latitude();
+	send.send.longitude = telem->getInertialNav().get_longitude();
+	send.send.preassure = telem->getBaro().get_pressure();
+	send.send.temperature = telem->getBaro().get_temperature();
+	send.send.altitude = telem->getBaro().get_altitude();
+	send.send.climb_rate = telem->getBaro().get_climb_rate();
+	send.send.batteryPct = telem->getBattery().capacity_remaining_pct();
 	send.send.crc = calcCRC(&send.send, send_pack_size);
 
 	/// Send to POK
