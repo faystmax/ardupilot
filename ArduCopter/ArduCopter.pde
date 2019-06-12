@@ -177,6 +177,10 @@ static AP_Vehicle::MultiCopter aparm;
 // Heli modules
 #include "heli.h"
 
+// This is the state of the flight control system
+// There are multiple states defined such as STABILIZE, ACRO,
+static int8_t control_mode = STABILIZE;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Define Main Telemetry objects
 ////////////////////////////////////////////////////////////////////////////////
@@ -218,7 +222,7 @@ static AP_BattMonitor battery;
 static AP_AHRS_DCM ahrs(ins, barometer, gps);
 static AP_InertialNav inertial_nav(ahrs, barometer, gps_glitch, baro_glitch);
 
-static Telem telem(ins, gps, gps_glitch, barometer, baro_glitch, compass, battery, ahrs, inertial_nav);
+static Telem telem(control_mode, ins, gps, gps_glitch, barometer, baro_glitch, compass, battery, ahrs, inertial_nav);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Define Main POK object
@@ -394,9 +398,6 @@ static union {
 ////////////////////////////////////////////////////////////////////////////////
 // Radio
 ////////////////////////////////////////////////////////////////////////////////
-// This is the state of the flight control system
-// There are multiple states defined such as STABILIZE, ACRO,
-static int8_t control_mode = STABILIZE;
 // Used to maintain the state of the previous control switch position
 // This is set to -1 when we need to re-read the switch
 static uint8_t oldSwitchPosition;
@@ -960,9 +961,6 @@ void loop()
     // ---------------------
     fast_loop();
 
-    // Send data and receive commands
-    update_POK();
-
     // tell the scheduler one tick has passed
     scheduler.tick();
 
@@ -1001,6 +999,9 @@ static void fast_loop()
 
     // run the attitude controllers
     update_flight_mode();
+
+    // Send data and receive commands
+    update_POK();
 
     // optical flow
     // --------------------

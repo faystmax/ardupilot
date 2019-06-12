@@ -16,9 +16,10 @@
 class Telem {
 public:
 
-	Telem(AP_InertialSensor &ins, AP_GPS &gps, GPS_Glitch &gps_glitch, AP_Baro &baro, Baro_Glitch &baro_glitch,
+	Telem(int8_t &mode, AP_InertialSensor &ins, AP_GPS &gps, GPS_Glitch &gps_glitch, AP_Baro &baro, Baro_Glitch &baro_glitch,
 			Compass& compass, AP_BattMonitor &battery, AP_AHRS_DCM &ahrs,AP_InertialNav &inertial_nav) :
-        _ins(ins),
+		_mode(mode),
+		_ins(ins),
         _gps(gps),
         _gps_glitch(gps_glitch),
         _baro(baro),
@@ -30,6 +31,7 @@ public:
         {
         }
 
+	int8_t& getMode() { return _mode;}
 	AP_InertialSensor& getIns() { return _ins;}
 
 	AP_GPS& getGps() { return _gps;}
@@ -45,6 +47,7 @@ public:
 	AP_InertialNav& getInertialNav() { return _inertial_nav;}
 
 private:
+	int8_t& _mode;
 	AP_InertialSensor& _ins;
 
 	AP_GPS& _gps;

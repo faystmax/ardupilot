@@ -51,6 +51,7 @@ void AC_POK_Stm::update(Telem *telem) {
 	/// Preparing data to send
 	memset(&send.send, 0, send_pack_size);
 	send.send.snc = SYNCHRONIZE_BYTE;
+	send.send.mode = telem->getMode();
 	send.send.roll = ToDeg(telem->getAhrs().roll);
 	send.send.pitch = ToDeg(telem->getAhrs().pitch);
 	send.send.yaw = ToDeg(telem->getAhrs().yaw);
@@ -70,7 +71,7 @@ void AC_POK_Stm::update(Telem *telem) {
 	expected = calcCRC(&rcv.rcv, receive_pack_size);
 	if (expected == rcv.rcv.crc) {
 		hal.console->printf("CRC OK and we rcv: %lu %lu %lu %lu %lu %lu\n",
-				rcv.rcv.code1, rcv.rcv.code2, rcv.rcv.code3, rcv.rcv.code4,
+				rcv.rcv.command, rcv.rcv.data, rcv.rcv.code3, rcv.rcv.code4,
 				rcv.rcv.code5, rcv.rcv.code6);
 		_last_state = TRANSFER_OK;
 	} else {

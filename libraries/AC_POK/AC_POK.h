@@ -16,6 +16,7 @@ typedef enum  {
 /// Exchange Structures
 struct send_pack {
 	uint32_t snc;
+	uint32_t mode;
     float roll;
     float pitch;
 	float yaw;
@@ -32,8 +33,8 @@ struct send_pack {
 
 struct receive_pack {
 	uint32_t snc;
-    uint32_t code1;
-    uint32_t code2;
+	uint32_t command;
+	uint32_t data;
     uint32_t code3;
     uint32_t code4;
     uint32_t code5;
