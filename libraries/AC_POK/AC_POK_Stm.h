@@ -11,7 +11,7 @@ public:
 	bool init();
 
 	/// send data to POK and receive commands
-	void update(Telem *telem);
+	void update(struct local_data &d, Telem &telem);
 
 private:
 	static uint32_t _timer;

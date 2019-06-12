@@ -29,7 +29,7 @@ bool AC_POK_Stm::init() {
 	return true;
 }
 
-void AC_POK_Stm::update(Telem *telem) {
+void AC_POK_Stm::update(struct local_data &d, Telem &telem) {
 
 	uint32_t tnow = hal.scheduler->micros();
 	// Read rate to 100hz maximum.
@@ -51,18 +51,23 @@ void AC_POK_Stm::update(Telem *telem) {
 	/// Preparing data to send
 	memset(&send.send, 0, send_pack_size);
 	send.send.snc = SYNCHRONIZE_BYTE;
-	send.send.mode = telem->getMode();
-	send.send.roll = ToDeg(telem->getAhrs().roll);
-	send.send.pitch = ToDeg(telem->getAhrs().pitch);
-	send.send.yaw = ToDeg(telem->getAhrs().yaw);
-	send.send.velociry_xy = telem->getInertialNav().get_velocity_xy();
-	send.send.latitude = telem->getInertialNav().get_latitude();
-	send.send.longitude = telem->getInertialNav().get_longitude();
-	send.send.preassure = telem->getBaro().get_pressure();
-	send.send.temperature = telem->getBaro().get_temperature();
-	send.send.altitude = telem->getBaro().get_altitude();
-	send.send.climb_rate = telem->getBaro().get_climb_rate();
-	send.send.batteryPct = telem->getBattery().capacity_remaining_pct();
+	send.send.mode = d.mode;
+	send.send.armed = d.armed;
+	send.send.rc1_in = d.rc1_in;
+	send.send.rc2_in = d.rc2_in;
+	send.send.rc3_in = d.rc3_in;
+	send.send.rc4_in = d.rc4_in;
+	send.send.roll = ToDeg(telem.getAhrs().roll);
+	send.send.pitch = ToDeg(telem.getAhrs().pitch);
+	send.send.yaw = ToDeg(telem.getAhrs().yaw);
+	send.send.velociry_xy = telem.getInertialNav().get_velocity_xy();
+	send.send.latitude = telem.getInertialNav().get_latitude();
+	send.send.longitude = telem.getInertialNav().get_longitude();
+	send.send.preassure = telem.getBaro().get_pressure();
+	send.send.temperature = telem.getBaro().get_temperature();
+	send.send.altitude = telem.getBaro().get_altitude();
+	send.send.climb_rate = telem.getBaro().get_climb_rate();
+	send.send.batteryPct = telem.getBattery().capacity_remaining_pct();
 	send.send.crc = calcCRC(&send.send, send_pack_size);
 
 	/// Send to POK
@@ -70,9 +75,8 @@ void AC_POK_Stm::update(Telem *telem) {
 
 	expected = calcCRC(&rcv.rcv, receive_pack_size);
 	if (expected == rcv.rcv.crc) {
-		hal.console->printf("CRC OK and we rcv: %lu %lu %lu %lu %lu %lu\n",
-				rcv.rcv.command, rcv.rcv.data, rcv.rcv.code3, rcv.rcv.code4,
-				rcv.rcv.code5, rcv.rcv.code6);
+		hal.console->printf("CRC OK and we rcv: command=%lu %lu %lu %lu %lu\n",
+				rcv.rcv.command, rcv.rcv.motor_pitch, rcv.rcv.motor_roll, rcv.rcv.motor_yaw, rcv.rcv.motor_throttle);
 		_last_state = TRANSFER_OK;
 	} else {
 		hal.console->printf("CRC not valid %lu / %lu\n", expected, rcv.rcv.crc);

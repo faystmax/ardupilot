@@ -17,6 +17,11 @@ typedef enum  {
 struct send_pack {
 	uint32_t snc;
 	uint32_t mode;
+	uint32_t armed;
+	int32_t  rc1_in;
+	int32_t  rc2_in;
+	int32_t  rc3_in;
+	int32_t  rc4_in;
     float roll;
     float pitch;
 	float yaw;
@@ -34,17 +39,26 @@ struct send_pack {
 struct receive_pack {
 	uint32_t snc;
 	uint32_t command;
-	uint32_t data;
-    uint32_t code3;
-    uint32_t code4;
-    uint32_t code5;
-    uint32_t code6;
+	uint32_t motor_pitch;
+	uint32_t motor_roll;
+	uint32_t motor_yaw;
+	uint32_t motor_throttle;
     uint32_t  crc;
 };
 
 union message {
 	struct send_pack send;
 	struct receive_pack rcv;
+};
+
+// Struct for data from Parameters.h to send
+struct local_data {
+	uint32_t mode;
+	uint32_t armed;
+	int32_t  rc1_in;
+	int32_t  rc2_in;
+	int32_t  rc3_in;
+	int32_t  rc4_in;
 };
 
 class AC_POK {
@@ -59,7 +73,7 @@ public:
 	virtual bool init() = 0;
 
 	// send data to POK and recive commands
-	virtual void update(Telem *telem) = 0;
+	virtual void update(struct local_data &d, Telem &telem) = 0;
 
 	TRANSFER_Status getLastState() { return _last_state; }
 

@@ -147,5 +147,14 @@ static void init_POK(void)
 
 static void update_POK(void)
 {
-	pok.update(&telem);
+	// Prepare some data
+	struct local_data d;
+	d.mode = control_mode;
+	d.armed = motors.armed() == true ? 1 : 0;
+	d.rc1_in = g.rc_1.control_in;
+	d.rc2_in = g.rc_2.control_in;
+	d.rc3_in = g.rc_3.control_in;
+	d.rc4_in = g.rc_4.control_in;
+
+	pok.update(d, telem);
 }
