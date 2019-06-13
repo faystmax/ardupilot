@@ -22,6 +22,24 @@ struct send_pack {
 	int32_t  rc2_in;
 	int32_t  rc3_in;
 	int32_t  rc4_in;
+    uint8_t limit_roll_pitch;     // we have reached roll or pitch limit
+    uint8_t limit_yaw;            // we have reached yaw limit
+    uint8_t limit_throttle_lower; // we have reached throttle's lower limit
+    uint8_t limit_throttle_upper; // we have reached throttle's upper limit
+    int32_t roll_sensor;
+    int32_t pitch_sensor;
+    int32_t yaw_sensor;
+    int32_t throttle_min;
+    int32_t throttle_max;
+    float gyro_x;
+    float gyro_y;
+    float gyro_z;
+    float cos_roll;
+    float cos_pitch;
+    float cos_yaw;
+    float sin_roll;
+    float sin_pitch;
+    float sin_yaw;
     float roll;
     float pitch;
 	float yaw;
@@ -59,6 +77,12 @@ struct local_data {
 	int32_t  rc2_in;
 	int32_t  rc3_in;
 	int32_t  rc4_in;
+    uint8_t limit_roll_pitch;
+    uint8_t limit_yaw;
+    uint8_t limit_throttle_lower;
+    uint8_t limit_throttle_upper;
+    int32_t throttle_min;
+    int32_t throttle_max;
 };
 
 class AC_POK {

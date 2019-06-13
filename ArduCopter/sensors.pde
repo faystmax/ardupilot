@@ -156,5 +156,13 @@ static void update_POK(void)
 	d.rc3_in = g.rc_3.control_in;
 	d.rc4_in = g.rc_4.control_in;
 
+	d.limit_roll_pitch = motors.limit.roll_pitch;
+	d.limit_yaw = motors.limit.yaw;
+	d.limit_throttle_lower = motors.limit.throttle_lower;
+	d.limit_throttle_upper = motors.limit.throttle_upper;
+
+	d.throttle_min = motors.throttle_min();
+	d.throttle_max = motors.throttle_max();
+
 	pok.update(d, telem);
 }
