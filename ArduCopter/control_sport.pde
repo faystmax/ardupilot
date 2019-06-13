@@ -3,7 +3,7 @@
 /*
  * control_sport.pde - init and run calls for sport flight mode
  */
-
+/*
 // sport_init - initialise sport controller
 static bool sport_init(bool ignore_checks)
 {
@@ -98,3 +98,4 @@ static void sport_run()
         pos_control.update_z_controller();
     }
 }
+*/

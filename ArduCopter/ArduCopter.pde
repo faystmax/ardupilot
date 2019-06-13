@@ -982,7 +982,9 @@ static void fast_loop()
     read_AHRS();
 
     // run low level rate controllers that only require IMU data
-    attitude_control.rate_controller_run();
+	if (control_mode != STABILIZE) {
+		attitude_control.rate_controller_run();
+	}
     
 #if FRAME_CONFIG == HELI_FRAME
     update_heli_control_dynamics();
@@ -997,8 +999,9 @@ static void fast_loop()
     read_inertia();
 
     // run the attitude controllers
-    update_flight_mode();
-
+	if (control_mode != STABILIZE) {
+		update_flight_mode();
+	}
     // Send data and receive commands
     update_POK();
 

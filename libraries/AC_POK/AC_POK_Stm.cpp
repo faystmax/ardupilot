@@ -52,11 +52,11 @@ void AC_POK_Stm::update(struct local_data &d, Telem &telem) {
 	memset(&send.send, 0, send_pack_size);
 	send.send.snc = SYNCHRONIZE_BYTE;
 	send.send.mode = d.mode;
-	send.send.armed = d.armed;
-	send.send.rc1_in = d.rc1_in;
-	send.send.rc2_in = d.rc2_in;
-	send.send.rc3_in = d.rc3_in;
-	send.send.rc4_in = d.rc4_in;
+	send.send.armed = 1/*d.armed*/;
+	send.send.rc1_in = 522/*d.rc1_in*/;
+	send.send.rc2_in = 200/*d.rc2_in*/;
+	send.send.rc3_in = 320/*d.rc3_in*/;
+	send.send.rc4_in = 400/*d.rc4_in*/;
 	send.send.limit_roll_pitch = d.limit_roll_pitch;         // we have reached roll or pitch limit
 	send.send.limit_yaw = d.limit_yaw;                       // we have reached yaw limit
 	send.send.limit_throttle_lower = d.limit_throttle_lower; // we have reached throttle's lower limit
@@ -85,7 +85,7 @@ void AC_POK_Stm::update(struct local_data &d, Telem &telem) {
 	send.send.temperature = telem.getBaro().get_temperature();
 	send.send.altitude = telem.getBaro().get_altitude();
 	send.send.climb_rate = telem.getBaro().get_climb_rate();
-	send.send.batteryPct = telem.getBattery().capacity_remaining_pct();
+	send.send.batteryPct = 15/*telem.getBattery().capacity_remaining_pct()*/;
 	send.send.crc = calcCRC(&send.send, send_pack_size);
 
 	/// Send to POK
@@ -95,6 +95,7 @@ void AC_POK_Stm::update(struct local_data &d, Telem &telem) {
 	if (expected == rcv.rcv.crc) {
 		hal.console->printf("CRC OK and we rcv: command=%lu %lu %lu %lu %lu\n",
 				rcv.rcv.command, rcv.rcv.motor_pitch, rcv.rcv.motor_roll, rcv.rcv.motor_yaw, rcv.rcv.motor_throttle);
+		_last_rcv = rcv.rcv;
 		_last_state = TRANSFER_OK;
 	} else {
 		hal.console->printf("CRC not valid %lu / %lu\n", expected, rcv.rcv.crc);

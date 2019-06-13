@@ -76,7 +76,7 @@ static bool set_mode(uint8_t mode)
             break;
 
         case SPORT:
-            success = sport_init(ignore_checks);
+            //success = sport_init(ignore_checks);
             break;
 
         case FLIP:
@@ -182,7 +182,7 @@ static void update_flight_mode()
             break;
 
         case SPORT:
-            sport_run();
+            //sport_run();
             break;
 
         case FLIP:

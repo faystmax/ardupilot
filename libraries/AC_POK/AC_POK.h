@@ -4,6 +4,8 @@
 #define __AC_POK_H__
 
 #define SYNCHRONIZE_BYTE 0x02
+#define COMMAND_EMPTY 0
+#define COMMAND_MOTORS 1
 
 #include <AP_Param.h>
 #include <AC_Telemetry.h>
@@ -22,27 +24,27 @@ struct send_pack {
 	int32_t  rc2_in;
 	int32_t  rc3_in;
 	int32_t  rc4_in;
-    uint8_t limit_roll_pitch;     // we have reached roll or pitch limit
-    uint8_t limit_yaw;            // we have reached yaw limit
-    uint8_t limit_throttle_lower; // we have reached throttle's lower limit
-    uint8_t limit_throttle_upper; // we have reached throttle's upper limit
+	uint8_t limit_roll_pitch;     // we have reached roll or pitch limit
+	uint8_t limit_yaw;            // we have reached yaw limit
+	uint8_t limit_throttle_lower; // we have reached throttle's lower limit
+	uint8_t limit_throttle_upper; // we have reached throttle's upper limit
     int32_t roll_sensor;
-    int32_t pitch_sensor;
-    int32_t yaw_sensor;
-    int32_t throttle_min;
-    int32_t throttle_max;
-    float gyro_x;
-    float gyro_y;
-    float gyro_z;
-    float cos_roll;
-    float cos_pitch;
-    float cos_yaw;
-    float sin_roll;
-    float sin_pitch;
-    float sin_yaw;
-    float roll;
-    float pitch;
-	float yaw;
+	int32_t pitch_sensor;
+	int32_t yaw_sensor;
+	int32_t throttle_min;
+	int32_t throttle_max;
+	float gyro_x;
+	float gyro_y;
+	float gyro_z;
+	float cos_roll;
+	float cos_pitch;
+	float cos_yaw;
+	float sin_roll;
+	float sin_pitch;
+	float sin_yaw;
+	float roll;
+	float pitch;
+    float yaw;
 	float velociry_xy;   // current horizontal velocity in cm/s
 	uint32_t latitude;   // latitude of the current position estimation in 100 nano degrees (i.e. degree value multiplied by 10,000,000)
 	uint32_t longitude;  // longitude of the current position estimation in 100 nano degrees (i.e. degree value multiplied by 10,000,000)
@@ -100,12 +102,14 @@ public:
 	virtual void update(struct local_data &d, Telem &telem) = 0;
 
 	TRANSFER_Status getLastState() { return _last_state; }
+	receive_pack getLastRcv() { return _last_rcv; };
 
 protected:
 	uint16_t message_size;
 	uint16_t send_pack_size;
 	uint16_t receive_pack_size;
 
+	receive_pack _last_rcv;
 	TRANSFER_Status _last_state;
 	AP_HAL::Semaphore *_spi_sem;
 	AP_HAL::SPIDeviceDriver *_spi;

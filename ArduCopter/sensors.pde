@@ -145,8 +145,7 @@ static void init_POK(void)
 	cliSerial->println_P(PSTR("POK Init successfuly"));
 }
 
-static void update_POK(void)
-{
+static void update_POK(void) {
 	// Prepare some data
 	struct local_data d;
 	d.mode = control_mode;
@@ -164,5 +163,19 @@ static void update_POK(void)
 	d.throttle_min = motors.throttle_min();
 	d.throttle_max = motors.throttle_max();
 
+	/// Send data and receive commands
 	pok.update(d, telem);
+
+	/// Send comand to motors
+	if (control_mode == STABILIZE && pok.getLastState() == TRANSFER_OK) {
+		receive_pack rcv = pok.getLastRcv();
+		if (rcv.command == COMMAND_MOTORS) {
+			hal.console->printf("Send to motors: %lu %lu %lu %lu\n",
+							rcv.motor_pitch, rcv.motor_roll, rcv.motor_yaw, rcv.motor_throttle);
+			motors.set_roll(rcv.motor_roll);
+			motors.set_pitch(rcv.motor_pitch);
+			motors.set_yaw(rcv.motor_yaw);
+			motors.set_throttle(rcv.motor_throttle);
+		}
+	}
 }
